@@ -52,7 +52,7 @@ const Sidebar: React.FC = () => {
           <p className="font-montessart text-xs italic text-white/70">"Your Career Takes Off Here."</p>
         </div>
 
-        {/* Navigation compacte */}
+        {/* Navigation compacte SANS CHECKBOX */}
         <nav className="space-y-2">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -62,34 +62,29 @@ const Sidebar: React.FC = () => {
               <NavLink
                 key={item.name}
                 to={item.path}
-                className={`group relative flex items-center justify-between rounded-2xl border px-4 py-3 transition-all duration-200 ${
+                className={`group relative flex items-center justify-between rounded-3xl border px-5 py-4 transition-all duration-300 ${
                   isActive
-                    ? 'border-white/60 bg-white/20 shadow-[0_12px_30px_rgba(6,10,38,0.4)]'
+                    ? 'border-white/60 bg-white/20 shadow-[0_18px_40px_rgba(6,10,38,0.45)]'
                     : 'border-white/10 bg-white/5 hover:border-white/30 hover:bg-white/10'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  {/* Checkbox SEULEMENT visible quand la page est active */}
-                  {isActive && (
-                    <div className="w-4 h-4 rounded border-2 border-white bg-white flex items-center justify-center">
-                      <span className="text-[#423772] text-[10px] font-bold">✓</span>
-                    </div>
-                  )}
+                <div className="flex items-center gap-4">
+                  {/* SUPPRIMÉ: Le checkbox a été complètement enlevé */}
                   
-                  {/* Icône réduite */}
+                  {/* Icône */}
                   <span
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200 ${
+                    className={`flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-300 ${
                       isActive
                         ? 'bg-gradient-to-br from-white to-white/70 text-[#312456]'
                         : 'bg-white/10 text-white group-hover:bg-white/20'
                     }`}
                   >
-                    <Icon className="text-xl" />
+                    <Icon className="text-2xl" />
                   </span>
                   
-                  {/* Texte réduit */}
+                  {/* Texte */}
                   <span
-                    className={`font-montessart text-base tracking-wide transition-colors ${
+                    className={`font-montessart text-lg tracking-wide transition-colors ${
                       isActive ? 'font-semibold text-white' : 'text-white/80 group-hover:text-white'
                     }`}
                   >
@@ -97,9 +92,9 @@ const Sidebar: React.FC = () => {
                   </span>
                 </div>
                 
-                {/* Chevron réduit */}
+                {/* Chevron */}
                 <FiChevronRight
-                  className={`text-lg transition-colors ${
+                  className={`text-xl transition-colors ${
                     isActive ? 'text-white' : 'text-white/40 group-hover:text-white'
                   }`}
                 />
