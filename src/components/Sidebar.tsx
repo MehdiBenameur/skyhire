@@ -12,6 +12,7 @@ import {
   FiChevronRight,
 } from 'react-icons/fi';
 import sidebarImage from '../assets/sidebar-image.jpg';
+import skyhireLogo from '../assets/skyhire-logo.png'; // Assure-toi d'avoir ce fichier
 
 const menuItems = [
   { name: 'Dashboard', path: '/', Icon: FiLayout },
@@ -38,21 +39,26 @@ const Sidebar: React.FC = () => {
       
       {/* Contenu compact */}
       <div className="relative flex h-full flex-col px-6 py-8">
-        {/* Header réduit */}
+        {/* Header avec LOGO SKYHIRE */}
         <div className="mb-8">
           <div className="mb-4 flex items-center gap-3">
+            {/* Logo SkyHire */}
             <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/20 bg-white/10 backdrop-blur-sm">
-              <span className="text-base font-semibold tracking-[0.3em] uppercase text-white/80">UT</span>
+              <img 
+                src={skyhireLogo} 
+                alt="SkyHire Logo" 
+                className="w-8 h-8 object-contain"
+              />
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-[0.3em] text-white/60">UtopiaHire</p>
+              {/* Texte supprimé - Seulement le nom */}
               <h1 className="text-2xl font-bold font-emirates leading-tight">SkyHire</h1>
             </div>
           </div>
           <p className="font-montessart text-xs italic text-white/70">"Your Career Takes Off Here."</p>
         </div>
 
-        {/* Navigation compacte SANS CHECKBOX */}
+        {/* Navigation compacte */}
         <nav className="space-y-2">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -69,8 +75,6 @@ const Sidebar: React.FC = () => {
                 }`}
               >
                 <div className="flex items-center gap-4">
-                  {/* SUPPRIMÉ: Le checkbox a été complètement enlevé */}
-                  
                   {/* Icône */}
                   <span
                     className={`flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-300 ${
