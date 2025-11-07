@@ -180,6 +180,10 @@ const SignUpPage: React.FC = () => {
           src={logo}
           alt="Tunisia Flag"
           className="w-[160px] h-auto object-contain -translate-x-8"
+          style={{
+            position: "relative",
+            left: "-14px"
+          }}
         />
         <p className="text-white text-sm font-medium tracking-wide">
           MADE WITH <span className="text-red-500">❤️</span> IN TUNISIA
