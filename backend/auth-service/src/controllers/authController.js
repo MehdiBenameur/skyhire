@@ -39,10 +39,26 @@ const signup = async (req, res) => {
       role: role || 'candidate'
     });
 
+    // ✅ CRÉER LE PROFIL AUTOMATIQUEMENT dans user-service
+    try {
+      await fetch('http://localhost:5002/api/users/profile/auto-create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: newUser._id,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role
+        })
+      });
+    } catch (profileError) {
+      console.log('Profile auto-creation failed, but user created:', profileError.message);
+    }
+
     // Générer token
     const token = generateToken(newUser._id);
-
-    // Mettre à jour lastLogin
     await newUser.updateLastLogin();
 
     res.status(201).json({
