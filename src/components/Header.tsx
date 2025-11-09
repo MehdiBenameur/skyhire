@@ -1,12 +1,16 @@
-// components/Header.tsx
+// components/Header.tsx - Version finale avec Account Settings
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiUser, FiLogOut, FiBell, FiSettings, FiChevronDown } from 'react-icons/fi';
+import { FiUser, FiLogOut, FiBell, FiSettings, FiChevronDown, FiMessageCircle } from 'react-icons/fi';
 import { authService } from '../services/authService';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const currentUser = authService.getCurrentUser();
+
+  // Pour l'instant, on utilise une valeur fixe - plus tard tu connecteras avec ton état global
+  const unreadNotifications = 3;
+  const unreadMessages = 2;
 
   const handleLogout = () => {
     authService.logout();
@@ -33,18 +37,31 @@ const Header: React.FC = () => {
             {currentUser ? (
               // Utilisateur connecté - Menu profil
               <div className="flex items-center space-x-4">
-                {/* Notifications */}
-                <button className="relative p-2 text-gray-600 hover:text-[#423772] transition-colors group">
-                  <FiBell className="text-xl group-hover:scale-110 transition-transform" />
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">
-                    3
-                  </span>
-                </button>
+                {/* Messages */}
+                <Link
+                  to="/chat"
+                  className="relative p-2 text-gray-600 hover:text-[#423772] transition-colors group"
+                >
+                  <FiMessageCircle className="text-xl group-hover:scale-110 transition-transform" />
+                  {unreadMessages > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">
+                      {unreadMessages}
+                    </span>
+                  )}
+                </Link>
 
-                {/* Settings */}
-                <button className="p-2 text-gray-600 hover:text-[#423772] transition-colors group">
-                  <FiSettings className="text-xl group-hover:scale-110 transition-transform" />
-                </button>
+                {/* Notifications */}
+                <Link
+                  to="/notifications"
+                  className="relative p-2 text-gray-600 hover:text-[#423772] transition-colors group"
+                >
+                  <FiBell className="text-xl group-hover:scale-110 transition-transform" />
+                  {unreadNotifications > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">
+                      {unreadNotifications}
+                    </span>
+                  )}
+                </Link>
 
                 {/* Profile Dropdown */}
                 <div className="relative group">
@@ -88,7 +105,33 @@ const Header: React.FC = () => {
                       <FiUser className="text-lg text-[#423772]" />
                       <span>My Profile</span>
                     </Link>
-                    
+
+                    <Link
+                      to="/chat"
+                      className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 font-montessart transition-colors"
+                    >
+                      <FiMessageCircle className="text-lg text-[#423772]" />
+                      <span>Messages</span>
+                      {unreadMessages > 0 && (
+                        <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                          {unreadMessages}
+                        </span>
+                      )}
+                    </Link>
+
+                    <Link
+                      to="/notifications"
+                      className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 font-montessart transition-colors"
+                    >
+                      <FiBell className="text-lg text-[#423772]" />
+                      <span>Notifications</span>
+                      {unreadNotifications > 0 && (
+                        <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                          {unreadNotifications}
+                        </span>
+                      )}
+                    </Link>
+
                     <Link
                       to="/settings"
                       className="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 font-montessart transition-colors"

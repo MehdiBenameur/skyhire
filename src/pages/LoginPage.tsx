@@ -11,6 +11,7 @@ import bg from "../assets/skyhire-bg.png";
 import logo from "../assets/skyhire-logo.png";
 import flag from "../assets/tunisia-flag.png";
 import { Flag } from "lucide-react";
+import { authService } from "../services/authService";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -21,18 +22,19 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-    try {
-      // await authService.login(email, password);
-      navigate("/");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  e.preventDefault();
+  setIsLoading(true);
+  setError("");
+  try {
+    await authService.login(email, password);
+    navigate("/"); // Une fois logué, redirection vers le Dashboard
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "Login failed");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div
@@ -41,7 +43,7 @@ const LoginPage: React.FC = () => {
     >
       {/* Logo en haut à gauche */}
       <div className="absolute top-6 left-10 flex items-center space-x-3">
-        <img src={flag} alt="SkyHire Logo" className="w-24 h-24 object-contain" />
+        <img src={logo} alt="SkyHire Logo" className="w-24 h-24 object-contain" />
       </div>
 
       {/* Formulaire de connexion */}
@@ -158,7 +160,7 @@ const LoginPage: React.FC = () => {
       {/* Pied de page avec drapeau et texte */}
       <div className="absolute bottom-6 left-10 flex flex-col items-center space-y-2">
         <img
-          src={logo}
+          src={flag}
           alt="Tunisia Flag"
           className="w-[160px] h-auto object-contain -translate-x-8"
           style={{

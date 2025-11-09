@@ -69,7 +69,7 @@ const CVPage: React.FC = () => {
   ];
 
   return (
-    <Layout>
+    
       <div className="w-full px-10 py-10">
         {/* Header */}
         <div className="text-center mb-12">
@@ -294,7 +294,7 @@ const CVPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    
   );
 };
 

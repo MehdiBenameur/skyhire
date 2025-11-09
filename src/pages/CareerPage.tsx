@@ -98,7 +98,7 @@ const CareerPage: React.FC = () => {
   ];
 
   return (
-    <Layout>
+    
       <div className="w-full px-10 py-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -344,7 +344,7 @@ const CareerPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    
   );
 };
 

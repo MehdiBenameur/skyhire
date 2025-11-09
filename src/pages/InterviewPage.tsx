@@ -56,7 +56,7 @@ const InterviewPage: React.FC = () => {
   }, [isInterviewActive]);
 
   return (
-    <Layout>
+    
       <div className="max-w-7xl mx-auto py-10">
         {/* --- Header --- */}
         <div className="text-center mb-10">
@@ -158,7 +158,7 @@ const InterviewPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    
   );
 };
 

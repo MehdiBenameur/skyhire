@@ -11,6 +11,10 @@ import CareerPage from './pages/CareerPage';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import Layout from './components/Layout';
+import ChatPage from './pages/ChatPage';
+import ProfilePage from './pages/ProfilePage';
+import NotificationsPage from './pages/NotificationPage';
+import SettingsPage from './pages/SettingsPage';
 
 // Composant pour protéger les routes
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -46,6 +50,32 @@ function App() {
             <Dashboard />
           </ProtectedRoute>
         } />
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        } />
+      
+        <Route path="/notifications" element={
+          <ProtectedRoute>
+            <NotificationsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <SettingsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/chat" element={
+          <ProtectedRoute>
+            <ChatPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/chat/:userId" element={
+          <ProtectedRoute>
+            <ChatPage />
+          </ProtectedRoute>
+          } />
         <Route path="/cv" element={
           <ProtectedRoute>
             <CVPage />

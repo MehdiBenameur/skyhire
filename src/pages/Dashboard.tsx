@@ -1,10 +1,13 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { FiFileText, FiCheckCircle, FiRotateCcw } from 'react-icons/fi';
 import { MdWorkOutline } from 'react-icons/md';
 import { HiOutlineAcademicCap } from 'react-icons/hi';
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+
   const stats = [
     { label: 'CV Score', value: '85%', color: 'text-[#423772]', icon: <FiFileText className="text-3xl text-[#423772]" /> },
     { label: 'Interviews Completed', value: '12', color: 'text-[#2b2467]', icon: <HiOutlineAcademicCap className="text-3xl text-[#2b2467]" /> },
@@ -27,7 +30,7 @@ const Dashboard: React.FC = () => {
   ];
 
   return (
-    <Layout>
+    
       <div className="max-w-6xl mx-auto px-10 py-10">
         {/* Titre principal */}
         <h2 className="text-3xl font-bold mb-8 text-black font-emirates text-center">
@@ -68,10 +71,16 @@ const Dashboard: React.FC = () => {
                 Quick Actions
               </h4>
               <div className="space-y-3">
-                <button className="w-full bg-[#423772] text-white py-3 rounded-lg hover:bg-[#312456] transition-colors font-montessart text-sm">
+                <button 
+                  onClick={() => navigate('/cv')}
+                  className="w-full bg-[#423772] text-white py-3 rounded-lg hover:bg-[#312456] transition-colors font-montessart text-sm"
+                >
                   Upload Your CV
                 </button>
-                <button className="w-full border border-[#423772] text-[#423772] py-3 rounded-lg hover:bg-[#423772] hover:text-white transition-colors font-montessart text-sm">
+                <button 
+                  onClick={() => navigate('/interview')}
+                  className="w-full border border-[#423772] text-[#423772] py-3 rounded-lg hover:bg-[#423772] hover:text-white transition-colors font-montessart text-sm"
+                >
                   Start Interview Practice
                 </button>
               </div>
@@ -94,7 +103,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    
   );
 };
 
