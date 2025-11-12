@@ -319,6 +319,58 @@ const removeSkill = async (req, res) => {
   }
 };
 
+// AJOUTE CETTE FONCTION
+const getUserById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    console.log('🔍 [USER-SERVICE] Fetching user by ID:', userId);
+
+    // 🔥 SOLUTION : Ne pas utiliser populate, récupérer directement UserProfile
+    const profile = await UserProfile.findOne({ userId });
+
+    if (!profile) {
+      console.log('❌ [USER-SERVICE] Profile not found for user:', userId);
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
+
+    // 🔥 SOLUTION : Retourner les données de base sans populate
+    const userData = {
+      _id: userId, // Utiliser l'ID directement
+      name: profile.headline || 'Aviation Professional', // Fallback si pas de nom
+      email: '', // Pas d'email dans UserProfile
+      avatar: '', // Pas d'avatar dans UserProfile  
+      role: 'candidate', // Valeur par défaut
+      isActive: true,
+      profile: {
+        headline: profile.headline,
+        location: profile.location,
+        skills: profile.skills,
+        bio: profile.bio,
+        stats: profile.stats
+      }
+    };
+
+    console.log('✅ [USER-SERVICE] User data prepared:', userData.name);
+
+    res.json({
+      status: 'success',
+      data: {
+        user: userData
+      }
+    });
+  } catch (error) {
+    console.error('🚨 [USER-SERVICE] Get user by ID error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to get user: ' + error.message
+    });
+  }
+};
+
 // user-service/src/controllers/userController.js - AJOUTER CETTE FONCTION
 
 // Création automatique du profil
@@ -345,6 +397,8 @@ const autoCreateProfile = async (req, res) => {
     // Créer le profil avec des valeurs par défaut
     const newProfile = await UserProfile.create({
       userId,
+      name: name || 'Aviation Professional', // 🔥 SAUVEGARDER LE NOM
+      email: email || '',
       headline: `${role === 'recruiter' ? 'Aviation Recruiter' : 'Aviation Professional'}`,
       bio: `Welcome to my SkyHire profile!`,
       location: '',
@@ -401,5 +455,6 @@ module.exports = {
   getPublicProfile,
   addSkill,
   removeSkill,
-  autoCreateProfile
+  autoCreateProfile,
+  getUserById
 };

@@ -36,6 +36,21 @@ const userProfileSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+    name: {
+    type: String,
+    required: true,
+    default: 'Aviation Professional'
+  },
+  email: {
+    type: String,
+    required: true
+  },
+  avatar: String,
+  role: {
+    type: String,
+    enum: ['candidate', 'recruiter'],
+    default: 'candidate'
+  },
   headline: {
     type: String,
     default: 'Aviation Professional'
