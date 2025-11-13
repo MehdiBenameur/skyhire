@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import { FiSearch, FiMessageCircle, FiCheck, FiUserPlus, FiUsers, FiClock, FiSend, FiX } from "react-icons/fi";
+import { useToast } from "../context/ToastContext";
 
 const NetworkPage: React.FC = () => {
+  const { showSuccess, showInfo } = useToast();
   const [activeTab, setActiveTab] = useState<'connections' | 'discover'>('connections');
   const [searchTerm, setSearchTerm] = useState('');
+
   const [connections, setConnections] = useState([
     {
       id: 1,
@@ -92,14 +95,14 @@ const NetworkPage: React.FC = () => {
       // Retirer de discover
       setDiscoverProfiles(prev => prev.filter(p => p.id !== personId));
       
-      alert(`Connection request sent to ${person.name}`);
+      showSuccess(`Connection request sent to ${person.name}`);
     }
   };
 
   const handleMessage = (personId: number) => {
     const person = connections.find(p => p.id === personId);
     if (person) {
-      alert(`Opening chat with ${person.name}`);
+      showInfo(`Opening chat with ${person.name}`);
       // Ici tu intégreras ton système de messagerie
     }
   };
@@ -120,7 +123,7 @@ const NetworkPage: React.FC = () => {
       // Retirer des demandes en attente
       setPendingRequests(prev => prev.filter(r => r.id !== requestId));
       
-      alert(`Connected with ${request.name}`);
+      showSuccess(`Connected with ${request.name}`);
     }
   };
 
@@ -128,7 +131,7 @@ const NetworkPage: React.FC = () => {
     const request = pendingRequests.find(r => r.id === requestId);
     if (request) {
       setPendingRequests(prev => prev.filter(r => r.id !== requestId));
-      alert(`Request from ${request.name} declined`);
+      showInfo(`Request from ${request.name} declined`);
     }
   };
 

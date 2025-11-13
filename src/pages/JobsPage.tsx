@@ -1,104 +1,56 @@
 // pages/JobsPage.tsx
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { FiMapPin, FiDollarSign, FiFilter, FiTrendingUp, FiHeart, FiShare2 } from "react-icons/fi";
+import { jobService, MatchingJob } from "../services/jobService";
+import { useToast } from '../context/ToastContext';
+import { authService } from '../services/authService';
+import { Link } from 'react-router-dom';
 
 const JobsPage: React.FC = () => {
   const [visibleJobs, setVisibleJobs] = useState(5);
-  const [savedJobs, setSavedJobs] = useState<number[]>([]);
+  const [savedJobs, setSavedJobs] = useState<string[]>([]);
   const [activeFilter, setActiveFilter] = useState("all");
   const [sortBy, setSortBy] = useState("match");
+  const [matches, setMatches] = useState<MatchingJob[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { showSuccess, showError } = useToast();
+  const currentUser = authService.getCurrentUser();
+  const isRecruiter = currentUser?.role === 'recruiter';
 
-  const jobs = [
-    {
-      id: 1,
-      airline: "Emirates Airlines",
-      position: "Flight Attendant",
-      location: "Dubai, UAE",
-      salary: { min: 3500, max: 4500 },
-      matchScore: 92,
-      tags: ["Customer Service", "Safety Procedures", "Languages"],
-      type: "flight-attendant",
-      postedDate: "2 days ago"
-    },
-    {
-      id: 2,
-      airline: "Singapore Airlines",
-      position: "Cabin Crew", 
-      location: "Singapore",
-      salary: { min: 3800, max: 4800 },
-      matchScore: 90,
-      tags: ["Service Excellence", "Multilingual", "Customer Service"],
-      type: "cabin-crew",
-      postedDate: "1 day ago"
-    },
-    {
-      id: 3,
-      airline: "Qatar Airways",
-      position: "Cabin Crew",
-      location: "Doha, Qatar",
-      salary: { min: 3200, max: 4200 },
-      matchScore: 88,
-      tags: ["Hospitality", "Emergency Response", "Multilingual"],
-      type: "cabin-crew",
-      postedDate: "3 days ago"
-    },
-    {
-      id: 4,
-      airline: "British Airways",
-      position: "Flight Attendant",
-      location: "London, UK",
-      salary: { min: 3300, max: 4300 },
-      matchScore: 85,
-      tags: ["Customer Care", "Safety", "Communication"],
-      type: "flight-attendant",
-      postedDate: "5 days ago"
-    },
-    {
-      id: 5,
-      airline: "Lufthansa",
-      position: "Cabin Crew",
-      location: "Frankfurt, Germany",
-      salary: { min: 3100, max: 4100 },
-      matchScore: 82,
-      tags: ["European Routes", "Service", "Languages"],
-      type: "cabin-crew",
-      postedDate: "1 week ago"
-    },
-    {
-      id: 6,
-      airline: "Etihad Airways",
-      position: "Senior Cabin Crew",
-      location: "Abu Dhabi, UAE",
-      salary: { min: 4000, max: 5000 },
-      matchScore: 78,
-      tags: ["Leadership", "Training", "VIP Service"],
-      type: "senior-crew",
-      postedDate: "4 days ago"
-    },
-    {
-      id: 7,
-      airline: "Air France",
-      position: "Flight Attendant",
-      location: "Paris, France",
-      salary: { min: 3400, max: 4400 },
-      matchScore: 75,
-      tags: ["French Language", "European Destinations", "Luxury Service"],
-      type: "flight-attendant",
-      postedDate: "6 days ago"
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await jobService.getMatchingJobs({ page: 1, limit: 50 });
+        setMatches(data);
+      } catch (e: any) {
+        setError(e?.message || "Failed to load jobs");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const handleApply = async (jobId: string) => {
+    try {
+      await jobService.applyToJob(jobId, {});
+      showSuccess("Application submitted");
+    } catch (e: any) {
+      showError(e?.response?.data?.message || e?.message || "Failed to apply");
     }
-  ];
-
-  const handleApply = (jobId: number) => {
-    alert(`Applying to job #${jobId}`);
-    // Navigation vers la page d'application ou ouverture modal
   };
 
-  const handleSaveJob = (jobId: number) => {
-    setSavedJobs(prev => 
-      prev.includes(jobId) 
-        ? prev.filter(id => id !== jobId)
-        : [...prev, jobId]
-    );
+  const handleSaveJob = async (jobId: string) => {
+    try {
+      await jobService.saveJob(jobId);
+      setSavedJobs(prev => prev.includes(jobId) ? prev.filter(id => id !== jobId) : [...prev, jobId]);
+      showSuccess(savedJobs.includes(jobId) ? 'Removed from saved' : 'Job saved');
+    } catch (e: any) {
+      showError(e?.response?.data?.message || e?.message || "Failed to save job");
+    }
   };
 
   const handleLoadMore = () => {
@@ -114,20 +66,22 @@ const JobsPage: React.FC = () => {
   };
 
   // Filtrer et trier les jobs
-  const filteredAndSortedJobs = jobs
-    .filter(job => activeFilter === "all" || job.type === activeFilter)
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "salary":
-          return b.salary.max - a.salary.max;
-        case "recent":
-          return a.id - b.id; // Simule la date récente
-        case "match":
-        default:
-          return b.matchScore - a.matchScore;
-      }
-    })
-    .slice(0, visibleJobs);
+  const filteredAndSortedJobs = useMemo(() => {
+    const list = matches
+      .filter(m => activeFilter === "all" || m.job.category === activeFilter)
+      .sort((a, b) => {
+        switch (sortBy) {
+          case "salary":
+            return (b.job.salary?.max || 0) - (a.job.salary?.max || 0);
+          case "recent":
+            return new Date(b.job.createdAt || 0).getTime() - new Date(a.job.createdAt || 0).getTime();
+          case "match":
+          default:
+            return (b.matchScore || 0) - (a.matchScore || 0);
+        }
+      });
+    return list.slice(0, visibleJobs);
+  }, [matches, activeFilter, sortBy, visibleJobs]);
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-10 py-8">
@@ -141,13 +95,24 @@ const JobsPage: React.FC = () => {
         </p>
       </div>
 
+      {(currentUser?.role === 'recruiter' || currentUser?.role === 'admin') && (
+        <div className="mb-6 flex justify-end">
+          <Link
+            to="/jobs/create"
+            className="bg-[#423772] text-white px-5 py-3 rounded-xl font-montessart font-semibold hover:bg-[#312456] transition-colors"
+          >
+            Post a Job
+          </Link>
+        </div>
+      )}
+
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white rounded-xl p-4 shadow-lg border border-gray-100 text-center">
           <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#423772] rounded-full flex items-center justify-center mx-auto mb-2">
             <FiTrendingUp className="text-lg sm:text-xl text-white" />
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-[#423772] font-emirates">{jobs.length}</p>
+          <p className="text-xl sm:text-2xl font-bold text-[#423772] font-emirates">{matches.length}</p>
           <p className="text-gray-600 font-montessart text-xs sm:text-sm">Job Matches</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-lg border border-gray-100 text-center">
@@ -260,15 +225,15 @@ const JobsPage: React.FC = () => {
       {/* Results Count */}
       <div className="mb-6">
         <p className="text-gray-600 font-montessart">
-          Showing {filteredAndSortedJobs.length} of {jobs.length} opportunities
+          {loading ? "Loading jobs..." : error ? error : `Showing ${filteredAndSortedJobs.length} of ${matches.length} opportunities`}
         </p>
       </div>
 
       {/* Job Cards */}
       <div className="space-y-6">
-        {filteredAndSortedJobs.map((job) => (
+        {filteredAndSortedJobs.map((m) => (
           <div 
-            key={job.id}
+            key={m.job._id}
             className="flex flex-col lg:flex-row justify-between items-start bg-white border border-gray-200 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-[#423772]/30"
           >
             {/* Left Section - Job Details */}
@@ -277,43 +242,47 @@ const JobsPage: React.FC = () => {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h2 className="text-xl font-bold text-gray-800 font-emirates">
-                      {job.airline}
+                      {m.job.company}
                     </h2>
                     <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-montessart font-medium">
-                      {job.postedDate}
+                      {m.job.createdAt ? new Date(m.job.createdAt).toLocaleDateString() : ""}
                     </span>
                   </div>
                   <p className="text-lg font-semibold text-[#423772] font-montessart mb-1">
-                    {job.position}
+                    {m.job.title}
                   </p>
                 </div>
                 
-                {/* Match Score Badge - Desktop */}
-                <div className="hidden lg:flex flex-col items-center ml-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-white font-bold text-lg font-emirates">
-                      {job.matchScore}%
-                    </span>
+                {/* Match Score Badge - Desktop (hide for recruiters) */}
+                {currentUser?.role !== 'recruiter' && (
+                  <div className="hidden lg:flex flex-col items-center ml-4">
+                    <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+                      <span className="text-white font-bold text-lg font-emirates">
+                        {m.matchScore}%
+                      </span>
+                    </div>
+                    <p className="text-gray-500 font-montessart text-xs mt-1">Match</p>
                   </div>
-                  <p className="text-gray-500 font-montessart text-xs mt-1">Match</p>
-                </div>
+                )}
               </div>
 
               {/* Location and Salary */}
               <div className="flex flex-col sm:flex-row sm:items-center text-gray-600 font-montessart mb-4 gap-2 sm:gap-6">
                 <div className="flex items-center">
                   <FiMapPin size={16} className="mr-2 text-[#423772]" />
-                  <span className="text-sm">{job.location}</span>
+                  <span className="text-sm">{m.job.location}</span>
                 </div>
-                <div className="flex items-center">
-                  <FiDollarSign size={16} className="mr-2 text-[#423772]" />
-                  <span className="text-sm">${job.salary.min.toLocaleString()}–${job.salary.max.toLocaleString()}/month</span>
-                </div>
+                {m.job.salary && (
+                  <div className="flex items-center">
+                    <FiDollarSign size={16} className="mr-2 text-[#423772]" />
+                    <span className="text-sm">${(m.job.salary.min).toLocaleString()}–${(m.job.salary.max).toLocaleString()}/{m.job.salary.period || 'month'}</span>
+                  </div>
+                )}
               </div>
 
               {/* Tags */}
               <div className="flex flex-wrap gap-2">
-                {job.tags.map((tag, index) => (
+                {(m.job.skills || []).slice(0,5).map((tag, index) => (
                   <span
                     key={index}
                     className="bg-gradient-to-r from-[#423772]/10 to-[#6D5BA6]/10 text-[#423772] text-xs px-3 py-1.5 rounded-full font-montessart font-medium border border-[#423772]/20"
@@ -326,29 +295,33 @@ const JobsPage: React.FC = () => {
 
             {/* Right Section - Actions and Mobile Score */}
             <div className="flex lg:flex-col items-center lg:items-end justify-between w-full lg:w-auto mt-4 lg:mt-0 lg:ml-6 gap-4">
-              {/* Mobile Score */}
-              <div className="lg:hidden flex items-center">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-sm font-emirates">
-                    {job.matchScore}%
-                  </span>
+              {/* Mobile Score (hide for recruiters) */}
+              {currentUser?.role !== 'recruiter' && (
+                <div className="lg:hidden flex items-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-white font-bold text-sm font-emirates">
+                      {m.matchScore}%
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row lg:flex-col gap-2">
                 <div className="flex gap-2">
-                  <button 
-                    onClick={() => handleSaveJob(job.id)}
-                    className={`p-2 rounded-lg border transition-colors ${
-                      savedJobs.includes(job.id)
-                        ? "bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
-                        : "bg-white border-gray-300 text-gray-600 hover:border-[#423772] hover:text-[#423772]"
-                    }`}
-                    title={savedJobs.includes(job.id) ? "Remove from saved" : "Save job"}
-                  >
-                    <FiHeart className={savedJobs.includes(job.id) ? "fill-current" : ""} />
-                  </button>
+                  {!isRecruiter && (
+                    <button 
+                      onClick={() => handleSaveJob(m.job._id)}
+                      className={`p-2 rounded-lg border transition-colors ${
+                        savedJobs.includes(m.job._id)
+                          ? "bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
+                          : "bg-white border-gray-300 text-gray-600 hover:border-[#423772] hover:text-[#423772]"
+                      }`}
+                      title={savedJobs.includes(m.job._id) ? "Remove from saved" : "Save job"}
+                    >
+                      <FiHeart className={savedJobs.includes(m.job._id) ? "fill-current" : ""} />
+                    </button>
+                  )}
                   <button 
                     className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:border-[#423772] hover:text-[#423772] transition-colors"
                     title="Share job"
@@ -356,12 +329,14 @@ const JobsPage: React.FC = () => {
                     <FiShare2 />
                   </button>
                 </div>
-                <button 
-                  onClick={() => handleApply(job.id)}
-                  className="bg-[#423772] text-white px-4 py-2 rounded-lg font-montessart font-semibold text-sm hover:bg-[#312456] transition-colors whitespace-nowrap"
-                >
-                  Apply Now
-                </button>
+                {!isRecruiter && (
+                  <button 
+                    onClick={() => handleApply(m.job._id)}
+                    className="bg-[#423772] text-white px-4 py-2 rounded-lg font-montessart font-semibold text-sm hover:bg-[#312456] transition-colors whitespace-nowrap"
+                  >
+                    Apply Now
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -369,13 +344,13 @@ const JobsPage: React.FC = () => {
       </div>
 
       {/* Load More */}
-      {visibleJobs < jobs.length && (
+      {visibleJobs < matches.length && (
         <div className="text-center mt-8">
           <button 
             onClick={handleLoadMore}
             className="bg-white text-[#423772] border border-[#423772] px-6 py-3 rounded-xl font-montessart font-semibold hover:bg-[#423772] hover:text-white transition-colors"
           >
-            Load More Opportunities ({jobs.length - visibleJobs} remaining)
+            Load More Opportunities ({Math.max(matches.length - visibleJobs, 0)} remaining)
           </button>
         </div>
       )}

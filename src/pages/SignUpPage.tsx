@@ -17,6 +17,7 @@ const SignUpPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [role, setRole] = useState<'candidate' | 'recruiter'>('candidate');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ const SignUpPage: React.FC = () => {
   setIsLoading(true);
   setError("");
   try {
-    await authService.signUp(email, password, name);
+    await authService.signUp(email, password, name, role);
     navigate("/"); // Rediriger directement vers le dashboard après inscription
   } catch (err) {
     setError(err instanceof Error ? err.message : "Registration failed");
@@ -124,6 +125,27 @@ const SignUpPage: React.FC = () => {
                 className="text-gray-500 hover:text-gray-700 ml-2"
               >
                 {showPassword ? <FiEyeOff /> : <FiEye />}
+              </button>
+            </div>
+          </div>
+
+          {/* Role Selection */}
+          <div>
+            <label className="text-sm font-semibold text-gray-700">I am signing up as</label>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setRole('candidate')}
+                className={`rounded-lg border px-3 py-2 font-medium ${role === 'candidate' ? 'border-[#423772] text-[#423772] bg-[#423772]/10' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
+              >
+                Candidate
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole('recruiter')}
+                className={`rounded-lg border px-3 py-2 font-medium ${role === 'recruiter' ? 'border-[#423772] text-[#423772] bg-[#423772]/10' : 'border-gray-300 text-gray-700 hover:bg-gray-100'}`}
+              >
+                Recruiter
               </button>
             </div>
           </div>

@@ -4,7 +4,7 @@ import Layout from '../components/Layout';
 import { FiUpload, FiTrendingUp, FiChevronDown, FiLoader } from 'react-icons/fi';
 import { AiFillFilePdf } from 'react-icons/ai';
 import { FaFileWord } from 'react-icons/fa';
-import { analyzeCV, uploadCVFile, CVAnalysis } from '../services/cvService';
+import { uploadCVFile, pollCVAnalysis, CVAnalysis } from '../services/cvService';
 
 const CVPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -40,11 +40,10 @@ const CVPage: React.FC = () => {
     try {
       // Étape 1: Upload du fichier
       const uploadResult = await uploadCVFile(file);
-      
-      if (uploadResult.success) {
-        // Étape 2: Analyse AI
+      if (uploadResult.success && uploadResult.fileId) {
+        // Étape 2: Polling d'analyse côté backend
         setIsAnalyzing(true);
-        const analysisResult = await analyzeCV(file);
+        const analysisResult = await pollCVAnalysis(uploadResult.fileId);
         setAnalysis(analysisResult);
       }
     } catch (err) {

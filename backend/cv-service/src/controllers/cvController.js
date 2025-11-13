@@ -4,6 +4,36 @@ const { analyzeCV } = require('../services/cvAnalysis');
 const fs = require('fs');
 const path = require('path');
 
+// Upload avatar image
+const uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Please upload an image file'
+      });
+    }
+
+    // Public URL path served by CV service and proxied by Gateway
+    const publicUrl = `/uploads/avatars/${req.file.filename}`;
+
+    res.status(201).json({
+      status: 'success',
+      message: 'Avatar uploaded successfully',
+      data: { url: publicUrl }
+    });
+  } catch (error) {
+    if (req.file && req.file.path && fs.existsSync(req.file.path)) {
+      try { fs.unlinkSync(req.file.path); } catch (_) {}
+    }
+    console.error('Upload avatar error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to upload avatar: ' + error.message
+    });
+  }
+};
+
 // Upload CV
 const uploadCV = async (req, res) => {
   try {
@@ -292,6 +322,7 @@ const generateRoadmap = (analysis) => {
 };
 
 module.exports = {
+  uploadAvatar,
   uploadCV,
   getUserCVs,
   getCVById,

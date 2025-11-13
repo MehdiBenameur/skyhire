@@ -19,7 +19,7 @@ const protect = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = { id: decoded.userId };
+    req.user = { id: decoded.userId, role: decoded.role };
     next();
   } catch (error) {
     res.status(401).json({
@@ -29,4 +29,17 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = { protect };
+// Autoriser seulement certaines rôles
+const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'Forbidden: insufficient role'
+      });
+    }
+    next();
+  };
+};
+
+module.exports = { protect, authorizeRoles };

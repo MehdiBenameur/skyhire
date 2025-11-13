@@ -17,7 +17,7 @@ const {
   updateApplicationStatus,
   addApplicationCommunication
 } = require('../controllers/jobsController');
-const { protect } = require('../middleware/auth');
+const { protect, authorizeRoles } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -37,10 +37,10 @@ router.post('/:id/apply', applyToJob);
 router.post('/:id/save', saveJob);
 
 // Routes pour recruteurs/admins - AJOUTER
-router.post('/', createJob);
-router.put('/:id', updateJob);
-router.delete('/:id', deleteJob);
-router.patch('/applications/:id/status', updateApplicationStatus);
-router.post('/applications/:id/communication', addApplicationCommunication);
+router.post('/', authorizeRoles('recruiter','admin'), createJob);
+router.put('/:id', authorizeRoles('recruiter','admin'), updateJob);
+router.delete('/:id', authorizeRoles('recruiter','admin'), deleteJob);
+router.patch('/applications/:id/status', authorizeRoles('recruiter','admin'), updateApplicationStatus);
+router.post('/applications/:id/communication', authorizeRoles('recruiter','admin'), addApplicationCommunication);
 
 module.exports = router;

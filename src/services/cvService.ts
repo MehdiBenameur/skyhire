@@ -1,6 +1,7 @@
 // services/cvService.ts
+import api from './api';
 
-// Mock data pour simuler l'analyse AI en attendant les vrais services
+// Types utilisés par le front
 export interface CVAnalysis {
   score: number;
   skills: string[];
@@ -9,63 +10,88 @@ export interface CVAnalysis {
   overallFeedback: string;
 }
 
-// Simulation d'analyse AI
-export const analyzeCV = async (file: File): Promise<CVAnalysis> => {
-  // Simuler un délai d'analyse (2-3 secondes)
-  await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 1000));
-  
-  // Données mockées basées sur le type de fichier
-  const baseScore = 65 + Math.floor(Math.random() * 30); // Score entre 65-95
-  
-  return {
-    score: baseScore,
-    skills: [
-      'Customer Service',
-      'Safety Procedures', 
-      'Communication Skills',
-      'Teamwork',
-      'Problem Solving',
-      'Multilingual'
-    ].slice(0, 3 + Math.floor(Math.random() * 3)),
-    
-    improvements: [
-      'Add more specific achievements and metrics',
-      'Include safety certifications (CPR, First Aid)',
-      'Highlight language proficiencies',
-      'Add relevant aviation training',
-      'Include customer service experience details'
-    ].slice(0, 2 + Math.floor(Math.random() * 2)),
-    
-    missingKeywords: [
-      'safety compliance',
-      'emergency procedures',
-      'passenger service',
-      'crew resource management'
-    ].slice(0, 2 + Math.floor(Math.random() * 2)),
-    
-    overallFeedback: baseScore >= 80 
-      ? 'Strong foundation for aviation roles. Focus on adding specific safety certifications and customer service metrics.'
-      : 'Good potential. Consider adding aviation-specific training and highlighting transferable skills more effectively.'
-  };
-};
-
-// Simulation d'upload de fichier
+// Upload réel via API Gateway → cv-service
 export const uploadCVFile = async (file: File): Promise<{ success: boolean; fileId?: string }> => {
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Vérification basique du type de fichier
   const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
   if (!allowedTypes.includes(file.type)) {
     throw new Error('File type not supported. Please upload PDF, DOC, or DOCX files.');
   }
-  
-  // Vérification de la taille (max 5MB)
   if (file.size > 5 * 1024 * 1024) {
     throw new Error('File size too large. Please upload files smaller than 5MB.');
   }
-  
+
+  const form = new FormData();
+  form.append('cv', file);
+
+  const { data } = await api.post('/api/cv/upload', form, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+
+  const id = data?.data?.cv?.id || data?.data?.cv?._id;
+  return { success: true, fileId: id };
+};
+
+// Upload avatar image via API Gateway → cv-service
+export const uploadAvatarImage = async (file: File): Promise<string> => {
+  const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+  if (!allowed.includes(file.type)) {
+    throw new Error('Only JPG, PNG, WEBP images are allowed');
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    throw new Error('Image too large. Max 2MB.');
+  }
+  const form = new FormData();
+  form.append('avatar', file);
+  const { data } = await api.post('/api/cv/avatar', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  const path: string = data?.data?.url;
+  if (!path) throw new Error('Failed to upload avatar');
+  const base = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  return `${base}${path}`;
+};
+
+// Récupérer l'analyse brute depuis le backend
+export const getCVAnalysisRaw = async (cvId: string) => {
+  const { data } = await api.get(`/api/cv/${cvId}/analysis`);
+  return data?.data?.analysis;
+};
+
+// Polling jusqu'à ce que l'analyse soit prête (ou timeout)
+export const pollCVAnalysis = async (cvId: string, timeoutMs = 30000, intervalMs = 1000): Promise<CVAnalysis> => {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const analysis = await getCVAnalysisRaw(cvId);
+      if (analysis) {
+        return mapAnalysisToFront(analysis);
+      }
+    } catch (e: any) {
+      // 404 "not available yet" ⇒ continuer à poll
+      const message = e?.response?.data?.message || '';
+      if (!/not available/i.test(message)) {
+        throw new Error(message || 'Failed to get CV analysis');
+      }
+    }
+    await new Promise(r => setTimeout(r, intervalMs));
+  }
+  throw new Error('CV analysis timeout. Please try again later.');
+};
+
+// Option helper: upload + poll en une seule fonction (si besoin)
+export const analyzeCV = async (file: File): Promise<CVAnalysis> => {
+  const { success, fileId } = await uploadCVFile(file);
+  if (!success || !fileId) throw new Error('Upload failed');
+  return await pollCVAnalysis(fileId);
+};
+
+// Mapping backend → Front shape attendu
+const mapAnalysisToFront = (a: any): CVAnalysis => {
   return {
-    success: true,
-    fileId: `file_${Date.now()}`
+    score: a?.score ?? 0,
+    skills: Array.isArray(a?.skills) ? a.skills : [],
+    improvements: Array.isArray(a?.improvements) ? a.improvements : [],
+    missingKeywords: a?.aviationMatch?.missingRequirements || [],
+    overallFeedback: Array.isArray(a?.recommendations) && a.recommendations.length > 0
+      ? a.recommendations[0]
+      : 'Analysis complete.'
   };
 };

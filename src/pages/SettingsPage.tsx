@@ -1,8 +1,13 @@
 // pages/SettingsPage.tsx
 import React, { useState } from 'react';
 import { FiSettings, FiUser, FiBell, FiLock, FiEye, FiEyeOff, FiSave, FiTrash2 } from 'react-icons/fi';
+import { authService } from '../services/authService';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '../context/ToastContext';
 
 const SettingsPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { showSuccess, showError, showInfo } = useToast();
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'notifications' | 'privacy'>('profile');
   const [isLoading, setIsLoading] = useState(false);
   
@@ -46,33 +51,45 @@ const SettingsPage: React.FC = () => {
     setIsLoading(true);
     // Simuler sauvegarde
     setTimeout(() => {
-      alert('Profile settings saved successfully!');
+      showSuccess('Profile settings saved successfully!');
       setIsLoading(false);
     }, 1000);
   };
 
   const handleChangePassword = async () => {
     if (security.newPassword !== security.confirmPassword) {
-      alert('New passwords do not match!');
+      showError('New passwords do not match!');
       return;
     }
-    setIsLoading(true);
-    // Simuler changement mot de passe
-    setTimeout(() => {
-      alert('Password changed successfully!');
+    try {
+      setIsLoading(true);
+      await authService.changePassword(security.currentPassword, security.newPassword);
+      showSuccess('Password changed successfully!');
       setSecurity(prev => ({
         ...prev,
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''
       }));
+    } catch (e: any) {
+      showError(e?.response?.data?.message || e?.message || 'Failed to change password');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
-  const handleDeleteAccount = () => {
-    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      alert('Account deletion requested. This feature will be implemented in the backend.');
+  const handleDeleteAccount = async () => {
+    if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) return;
+    try {
+      setIsLoading(true);
+      await authService.deleteAccount();
+      authService.logout();
+      showSuccess('Your account has been deleted.');
+      navigate('/login');
+    } catch (e: any) {
+      showError(e?.response?.data?.message || e?.message || 'Failed to delete account');
+    } finally {
+      setIsLoading(false);
     }
   };
 

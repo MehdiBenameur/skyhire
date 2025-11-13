@@ -181,11 +181,13 @@ const getJobDetails = async (req, res) => {
     // Incrémenter les vues
     await job.incrementViews();
 
-    // Vérifier si l'utilisateur a déjà postulé
-    const existingApplication = await Application.findOne({
-      jobId: id,
-      userId: req.user.id
-    });
+    let existingApplication = null;
+    if (req.user && req.user.id) {
+      existingApplication = await Application.findOne({
+        jobId: id,
+        userId: req.user.id
+      });
+    }
 
     res.json({
       status: 'success',

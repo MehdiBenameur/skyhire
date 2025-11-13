@@ -57,8 +57,9 @@ const signup = async (req, res) => {
       console.log('Profile auto-creation failed, but user created:', profileError.message);
     }
 
-    // Générer token
-    const token = generateToken(newUser._id);
+    // Générer token avec rôle
+    const token = generateToken(newUser._id, newUser.role);
+
     await newUser.updateLastLogin();
 
     res.status(201).json({
@@ -113,8 +114,8 @@ const login = async (req, res) => {
       });
     }
 
-    // Générer token
-    const token = generateToken(user._id);
+    // Générer token avec rôle
+    const token = generateToken(user._id, user.role);
 
     // Mettre à jour lastLogin
     await user.updateLastLogin();
@@ -158,13 +159,14 @@ const getProfile = async (req, res) => {
 // Mettre à jour le profil
 const updateProfile = async (req, res) => {
   try {
-    const { name, bio, location, phone, languages, skills, experience } = req.body;
+    const { name, bio, location, phone, languages, skills, experience, avatar } = req.body;
     
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
       {
         $set: {
           ...(name && { name }),
+          ...(avatar !== undefined && { avatar }),
           'profile.bio': bio,
           'profile.location': location,
           'profile.phone': phone,

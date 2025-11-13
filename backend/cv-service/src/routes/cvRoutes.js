@@ -1,6 +1,7 @@
 // cv-service/src/routes/cvRoutes.js
 const express = require('express');
 const {
+  uploadAvatar,
   uploadCV,
   getUserCVs,
   getCVById,
@@ -10,11 +11,15 @@ const {
 } = require('../controllers/cvController');
 const { protect } = require('../middleware/auth');
 const upload = require('../middleware/upload');
+const uploadAvatarMw = require('../middleware/uploadAvatar');
 
 const router = express.Router();
 
 // Toutes les routes sont protégées
 router.use(protect);
+
+// Avatar upload
+router.post('/avatar', uploadAvatarMw.single('avatar'), uploadAvatar);
 
 router.post('/upload', upload.single('cv'), uploadCV);
 router.get('/', getUserCVs);

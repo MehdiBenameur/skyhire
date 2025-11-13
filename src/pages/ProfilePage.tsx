@@ -1,29 +1,55 @@
 // pages/ProfilePage.tsx
-import React, { useState } from 'react';
-import { FiUser, FiMail, FiMapPin, FiPhone, FiEdit2, FiSave, FiUpload, FiAward, FiGlobe } from 'react-icons/fi';
+import React, { useState, useEffect } from 'react';
+import { FiUser, FiMail, FiMapPin, FiPhone, FiEdit2, FiSave, FiAward, FiGlobe } from 'react-icons/fi';
+import { authService } from '../services/authService';
+import { userService } from '../services/userService';
+import { useToast } from '../context/ToastContext';
 
 const ProfilePage: React.FC = () => {
+  const { showSuccess, showError } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+  const [avatar, setAvatar] = useState<string | undefined>(authService.getCurrentUser()?.avatar);
   const [profile, setProfile] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
+    name: 'Loading...',
+    email: '',
     position: 'Flight Attendant Candidate',
-    location: 'Dubai, UAE',
-    phone: '+971 50 123 4567',
-    bio: 'Passionate aviation professional with 3+ years of customer service experience. Seeking opportunities with international airlines.',
-    skills: ['Customer Service', 'Safety Procedures', 'Multilingual', 'Emergency Response', 'Team Leadership'],
-    languages: ['English (Fluent)', 'French (Intermediate)', 'Arabic (Basic)'],
-    experience: '3 years in hospitality and customer service roles'
+    location: '',
+    phone: '',
+    bio: '',
+    skills: [] as string[],
+    languages: [] as string[],
+    experience: ''
   });
 
   const [newSkill, setNewSkill] = useState('');
   const [newLanguage, setNewLanguage] = useState('');
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsEditing(false);
-    // Ici tu enverras les données au backend
-    alert('Profile updated successfully!');
+    try {
+      const current = authService.getCurrentUser();
+      if (current && profile.name && profile.name !== current.name) {
+        await authService.updateProfile({ name: profile.name });
+      }
+      await userService.updateProfile({
+        headline: profile.position,
+        bio: profile.bio,
+        location: profile.location,
+        phone: profile.phone,
+        languages: profile.languages.map((l: any) => (
+          typeof l === 'string' 
+            ? { language: l, proficiency: 'fluent' } 
+            : l
+        )),
+        // Remplacer la liste des compétences côté backend
+        skills: profile.skills.map((s: any) => ({ name: typeof s === 'string' ? s : s?.name }))
+      } as any);
+      showSuccess('Profile updated successfully!');
+    } catch (e: any) {
+      showError(e?.message || 'Failed to update profile');
+    }
   };
+
 
   const addSkill = () => {
     if (newSkill.trim() && !profile.skills.includes(newSkill)) {
@@ -41,6 +67,29 @@ const ProfilePage: React.FC = () => {
       skills: prev.skills.filter(skill => skill !== skillToRemove)
     }));
   };
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const current = authService.getCurrentUser();
+        const p = await userService.getProfile();
+        setProfile(prev => ({
+          ...prev,
+          name: current?.name || p.name || prev.name,
+          email: current?.email || p.email || prev.email,
+          position: p.headline || prev.position,
+          location: p.location || '',
+          phone: p.phone || '',
+          bio: p.bio || '',
+          skills: Array.isArray(p.skills) ? (p.skills as any[]).map((s: any) => s?.name || s) : [],
+          languages: Array.isArray(p.languages) ? (p.languages as any[]).map((l: any) => l?.language || l) : []
+        }));
+      } catch (_) {
+        // ignore for now
+      }
+    };
+    load();
+  }, []);
 
   const addLanguage = () => {
     if (newLanguage.trim() && !profile.languages.includes(newLanguage)) {
@@ -92,15 +141,14 @@ const ProfilePage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Avatar Section */}
               <div className="flex flex-col items-center lg:items-start space-y-4">
-                <div className="w-32 h-32 bg-gradient-to-br from-[#423772] to-[#6D5BA6] rounded-2xl flex items-center justify-center text-white font-bold text-4xl font-emirates shadow-lg">
-                  {profile.name.split(' ').map(n => n[0]).join('')}
-                </div>
-                {isEditing && (
-                  <button className="flex items-center gap-2 text-[#423772] font-montessart font-medium hover:text-[#312456] transition-colors">
-                    <FiUpload className="text-lg" />
-                    Change Photo
-                  </button>
+                {avatar ? (
+                  <img src={avatar} alt="Avatar" className="w-32 h-32 rounded-2xl object-cover shadow-lg" />
+                ) : (
+                  <div className="w-32 h-32 bg-gradient-to-br from-[#423772] to-[#6D5BA6] rounded-2xl flex items-center justify-center text-white font-bold text-4xl font-emirates shadow-lg">
+                    {profile.name.split(' ').map(n => n[0]).join('')}
+                  </div>
                 )}
+                {/* Change Photo removed as requested */}
               </div>
 
               {/* Form Fields */}

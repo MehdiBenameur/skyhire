@@ -15,6 +15,8 @@ import ChatPage from './pages/ChatPage';
 import ProfilePage from './pages/ProfilePage';
 import NotificationsPage from './pages/NotificationPage';
 import SettingsPage from './pages/SettingsPage';
+import { ToastProvider } from './context/ToastContext';
+import CreateJobPage from './pages/CreateJobPage';
 
 // Composant pour protéger les routes
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -28,10 +30,16 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return !currentUser ? <>{children}</> : <Navigate to="/" />;
 };
 
+const RoleRoute: React.FC<{ roles: Array<'candidate' | 'recruiter' | 'admin'>; children: React.ReactNode }> = ({ roles, children }) => {
+  const currentUser = authService.getCurrentUser();
+  return currentUser && roles.includes(currentUser.role) ? <Layout>{children}</Layout> : <Navigate to="/jobs" />;
+};
+
 function App() {
   return (
-    <Router>
-      <Routes>
+    <ToastProvider>
+      <Router>
+        <Routes>
         {/* Routes publiques */}
         <Route path="/login" element={
           <PublicRoute>
@@ -91,6 +99,11 @@ function App() {
             <JobsPage />
           </ProtectedRoute>
         } />
+        <Route path="/jobs/create" element={
+          <RoleRoute roles={['recruiter','admin']}>
+            <CreateJobPage />
+          </RoleRoute>
+        } />
         <Route path="/network" element={
           <ProtectedRoute>
             <NetworkPage />
@@ -104,8 +117,9 @@ function App() {
 
         {/* Redirection par défaut */}
         <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+    </ToastProvider>
   );
 }
 
