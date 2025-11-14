@@ -87,6 +87,16 @@ export const jobService = {
     return data;
   },
 
+  async updateJob(id: string, payload: Partial<{ title: string; company: string; location: string; category: string; type: string; salary: { min: number; max: number; currency?: string; period?: string }; description: string; requirements: string[]; responsibilities: string[]; benefits: string[]; skills: string[]; experience: string; education: string[]; languages: Array<{ language: string; proficiency: string }>; applicationDeadline: string; isRemote: boolean; visaSponsorship: boolean; relocationAssistance: boolean; contact: { email?: string; phone?: string; website?: string } }>): Promise<any> {
+    const { data } = await api.put(`/api/jobs/${id}`, payload);
+    return data;
+  },
+
+  async deleteJob(id: string): Promise<any> {
+    const { data } = await api.delete(`/api/jobs/${id}`);
+    return data;
+  },
+
   async getCategories(): Promise<Array<{ name: string; count: number; label: string }>> {
     const { data } = await api.get('/api/jobs/categories');
     return data?.data?.categories || [];

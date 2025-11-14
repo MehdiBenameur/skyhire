@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FiMapPin, FiDollarSign, FiFilter, FiTrendingUp, FiHeart, FiShare2 } from "react-icons/fi";
 import { jobService, MatchingJob } from "../services/jobService";
+import { chatService } from "../services/chatService";
 import { useToast } from '../context/ToastContext';
 import { authService } from '../services/authService';
 import { Link } from 'react-router-dom';
@@ -17,6 +18,45 @@ const JobsPage: React.FC = () => {
   const { showSuccess, showError } = useToast();
   const currentUser = authService.getCurrentUser();
   const isRecruiter = currentUser?.role === 'recruiter';
+
+  // Share modal state
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareTarget, setShareTarget] = useState<null | { id: string; title: string; company: string; location?: string }>(null);
+  const [convs, setConvs] = useState<any[]>([]);
+  const [convLoading, setConvLoading] = useState(false);
+  const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
+  const [sendingShare, setSendingShare] = useState(false);
+
+  const openShare = async (job: { _id: string; title: string; company: string; location?: string }) => {
+    setShareTarget({ id: job._id, title: job.title, company: job.company, location: job.location });
+    setShareOpen(true);
+    setSelectedConvId(null);
+    try {
+      setConvLoading(true);
+      const { conversations } = await chatService.getConversations();
+      setConvs(conversations || []);
+    } catch (e: any) {
+      showError(e?.response?.data?.message || e?.message || 'Failed to load conversations');
+    } finally {
+      setConvLoading(false);
+    }
+  };
+
+  const sendShare = async () => {
+    if (!selectedConvId || !shareTarget) return;
+    try {
+      setSendingShare(true);
+      const content = `Check this job: ${shareTarget.company} - ${shareTarget.title}${shareTarget.location ? ' • ' + shareTarget.location : ''} (Job ID: ${shareTarget.id})`;
+      await chatService.sendMessage(selectedConvId, { content, type: 'text' });
+      showSuccess('Job shared successfully');
+      setShareOpen(false);
+      setShareTarget(null);
+    } catch (e: any) {
+      showError(e?.response?.data?.message || e?.message || 'Failed to share job');
+    } finally {
+      setSendingShare(false);
+    }
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -323,6 +363,7 @@ const JobsPage: React.FC = () => {
                     </button>
                   )}
                   <button 
+                    onClick={() => openShare(m.job)}
                     className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:border-[#423772] hover:text-[#423772] transition-colors"
                     title="Share job"
                   >
@@ -354,8 +395,44 @@ const JobsPage: React.FC = () => {
           </button>
         </div>
       )}
+      {/* Share Modal */}
+      {shareOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShareOpen(false)} />
+          <div className="relative bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-lg p-6">
+            <h3 className="text-xl font-semibold text-gray-900 font-emirates mb-2">Share Job</h3>
+            {shareTarget && (
+              <p className="text-gray-600 font-montessart mb-4">{shareTarget.company} — {shareTarget.title}{shareTarget.location ? ` • ${shareTarget.location}` : ''}</p>
+            )}
+            <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-xl p-2 mb-4">
+              {convLoading ? (
+                <div className="text-gray-600 font-montessart p-3">Loading conversations...</div>
+              ) : convs.length === 0 ? (
+                <div className="text-gray-600 font-montessart p-3">No conversations yet.</div>
+              ) : (
+                <ul className="divide-y divide-gray-100">
+                  {convs.map((c: any) => (
+                    <li key={c._id} className={`p-3 cursor-pointer flex items-center justify-between ${selectedConvId === c._id ? 'bg-[#423772]/10' : 'hover:bg-gray-50'}`} onClick={() => setSelectedConvId(c._id)}>
+                      <div className="min-w-0">
+                        <p className="font-montessart font-semibold text-gray-800 truncate">{c.title || (c.participants?.map((p: any) => p.user?.name).filter(Boolean).join(', ') || 'Conversation')}</p>
+                        {c.lastMessage?.content && (
+                          <p className="text-gray-500 text-sm font-montessart truncate">{c.lastMessage.content}</p>
+                        )}
+                      </div>
+                      <input type="radio" checked={selectedConvId === c._id} readOnly className="ml-3" />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setShareOpen(false)} className="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-montessart font-semibold hover:bg-gray-200 transition-colors">Cancel</button>
+              <button onClick={sendShare} disabled={!selectedConvId || sendingShare} className="bg-[#423772] text-white px-4 py-2 rounded-lg font-montessart font-semibold hover:bg-[#312456] transition-colors disabled:opacity-60">{sendingShare ? 'Sharing...' : 'Share'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
-
+}
 export default JobsPage;

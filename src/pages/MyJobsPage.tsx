@@ -1,24 +1,26 @@
 // pages/MyJobsPage.tsx
 import React, { useEffect, useState } from 'react';
 import { jobService, RecruiterJob } from '../services/jobService';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FiMapPin, FiUsers, FiEye, FiHeart } from 'react-icons/fi';
 import { useToast } from '../context/ToastContext';
 
 const MyJobsPage: React.FC = () => {
-  const { showError } = useToast();
+  const navigate = useNavigate();
+  const { showError, showSuccess } = useToast();
   const [jobs, setJobs] = useState<RecruiterJob[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const load = async (targetPage = 1) => {
     try {
       setLoading(true);
       setError(null);
       const { jobs: list, pages: totalPages } = await jobService.getMyJobs({ page: targetPage, limit: 10 });
-      setJobs(targetPage === 1 ? list : [...jobs, ...list]);
+      setJobs(prev => (targetPage === 1 ? list : [...prev, ...list]));
       setPage(targetPage);
       setPages(totalPages || 1);
     } catch (e: any) {
@@ -37,6 +39,25 @@ const MyJobsPage: React.FC = () => {
 
   const loadMore = () => {
     if (page < pages) load(page + 1);
+  };
+
+  const onEdit = (id: string) => {
+    navigate(`/jobs/edit/${id}`);
+  };
+
+  const onDelete = async (id: string) => {
+    const ok = window.confirm('Are you sure you want to delete this job?');
+    if (!ok) return;
+    try {
+      setDeletingId(id);
+      await jobService.deleteJob(id);
+      setJobs(prev => prev.filter(j => j._id !== id));
+      showSuccess('Job deleted successfully');
+    } catch (e: any) {
+      showError(e?.response?.data?.message || e?.message || 'Failed to delete job');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -73,6 +94,12 @@ const MyJobsPage: React.FC = () => {
                 <Link to={`/jobs/my/${j._id}/applications`} className="ml-2 bg-white text-[#423772] border border-[#423772] px-3 py-1.5 rounded-lg font-montessart font-semibold hover:bg-[#423772] hover:text-white transition-colors">
                   View Applications
                 </Link>
+                <button onClick={() => onEdit(j._id)} className="ml-2 bg-white text-[#423772] border border-[#423772] px-3 py-1.5 rounded-lg font-montessart font-semibold hover:bg-[#423772] hover:text-white transition-colors">
+                  Edit
+                </button>
+                <button onClick={() => onDelete(j._id)} disabled={deletingId === j._id} className="ml-1 bg-red-50 text-red-700 border border-red-300 px-3 py-1.5 rounded-lg font-montessart font-semibold hover:bg-red-600 hover:text-white transition-colors disabled:opacity-60">
+                  {deletingId === j._id ? 'Deleting...' : 'Delete'}
+                </button>
               </div>
             </div>
           </div>

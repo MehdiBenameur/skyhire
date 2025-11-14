@@ -43,8 +43,8 @@ router.post('/:id([0-9a-fA-F]{24})/save', saveJob);
 // Routes pour recruteurs/admins - AJOUTER
 router.get('/:id([0-9a-fA-F]{24})/applications', authorizeRoles('recruiter','admin'), getApplicationsForJob);
 router.post('/', authorizeRoles('recruiter','admin'), createJob);
-router.put('/:id', authorizeRoles('recruiter','admin'), updateJob);
-router.delete('/:id', authorizeRoles('recruiter','admin'), deleteJob);
+router.put('/:id([0-9a-fA-F]{24})', authorizeRoles('recruiter','admin'), updateJob);
+router.delete('/:id([0-9a-fA-F]{24})', authorizeRoles('recruiter','admin'), deleteJob);
 router.patch('/applications/:id/status', authorizeRoles('recruiter','admin'), updateApplicationStatus);
 router.post('/applications/:id/communication', authorizeRoles('recruiter','admin'), addApplicationCommunication);
 

@@ -20,6 +20,7 @@ import CreateJobPage from './pages/CreateJobPage';
 import MyApplicationsPage from './pages/MyApplicationsPage';
 import MyJobsPage from './pages/MyJobsPage';
 import JobApplicationsPage from './pages/JobApplicationsPage';
+import EditJobPage from './pages/EditJobPage';
 
 // Composant pour protéger les routes
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -120,6 +121,11 @@ function App() {
         <Route path="/jobs/my/:jobId/applications" element={
           <RoleRoute roles={['recruiter','admin']}>
             <JobApplicationsPage />
+          </RoleRoute>
+        } />
+        <Route path="/jobs/edit/:id" element={
+          <RoleRoute roles={['recruiter','admin']}>
+            <EditJobPage />
           </RoleRoute>
         } />
         <Route path="/network" element={
