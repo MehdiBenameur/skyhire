@@ -17,6 +17,9 @@ import NotificationsPage from './pages/NotificationPage';
 import SettingsPage from './pages/SettingsPage';
 import { ToastProvider } from './context/ToastContext';
 import CreateJobPage from './pages/CreateJobPage';
+import MyApplicationsPage from './pages/MyApplicationsPage';
+import MyJobsPage from './pages/MyJobsPage';
+import JobApplicationsPage from './pages/JobApplicationsPage';
 
 // Composant pour protéger les routes
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -99,9 +102,24 @@ function App() {
             <JobsPage />
           </ProtectedRoute>
         } />
+        <Route path="/applications" element={
+          <ProtectedRoute>
+            <MyApplicationsPage />
+          </ProtectedRoute>
+        } />
         <Route path="/jobs/create" element={
           <RoleRoute roles={['recruiter','admin']}>
             <CreateJobPage />
+          </RoleRoute>
+        } />
+        <Route path="/jobs/my" element={
+          <RoleRoute roles={['recruiter','admin']}>
+            <MyJobsPage />
+          </RoleRoute>
+        } />
+        <Route path="/jobs/my/:jobId/applications" element={
+          <RoleRoute roles={['recruiter','admin']}>
+            <JobApplicationsPage />
           </RoleRoute>
         } />
         <Route path="/network" element={

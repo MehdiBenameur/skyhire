@@ -3,6 +3,54 @@ const Job = require('../models/Job');
 const Application = require('../models/Application');
 const { getMatchingJobs } = require('../services/jobMatching');
 const { get } = require('http');
+const mongoose = require('mongoose');
+
+// Obtenir les jobs postés par l'utilisateur courant (recruteur/admin)
+const getMyJobs = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const p = parseInt(page);
+    const l = parseInt(limit);
+    const safePage = isNaN(p) || p < 1 ? 1 : p;
+    const safeLimit = isNaN(l) || l < 1 ? 10 : Math.min(l, 50);
+    const skip = (safePage - 1) * safeLimit;
+
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ status: 'error', message: 'Not authorized' });
+    }
+    if (!mongoose.Types.ObjectId.isValid(req.user.id)) {
+      return res.status(400).json({ status: 'error', message: 'Invalid user id' });
+    }
+
+    const filter = { postedBy: req.user.id, isActive: true };
+
+    const jobs = await Job.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(safeLimit);
+
+    const total = await Job.countDocuments(filter);
+
+    res.json({
+      status: 'success',
+      data: {
+        jobs,
+        pagination: {
+          page: safePage,
+          limit: safeLimit,
+          total,
+          pages: Math.ceil(total / safeLimit)
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get my jobs error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to get my jobs'
+    });
+  }
+};
 
 // Obtenir tous les jobs avec filtres
 const getAllJobs = async (req, res) => {
@@ -316,6 +364,36 @@ const getApplicationHistory = async (req, res) => {
     res.status(500).json({
       status: 'error',
       message: 'Failed to get application history'
+    });
+  }
+};
+
+// Obtenir toutes les candidatures pour un job (recruteur/admin)
+const getApplicationsForJob = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Vérifier que le job appartient à l'utilisateur courant
+    const job = await Job.findOne({ _id: id, postedBy: req.user.id });
+    if (!job) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Job not found or not authorized'
+      });
+    }
+
+    const applications = await Application.find({ jobId: id })
+      .populate('userId', 'name email')
+      .sort({ appliedAt: -1 });
+
+    res.json({
+      status: 'success',
+      data: { applications }
+    });
+  } catch (error) {
+    console.error('Get job applications error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to get job applications'
     });
   }
 };
@@ -694,6 +772,7 @@ const addApplicationCommunication = async (req, res) => {
 };
 
 module.exports = {
+  getMyJobs,
   createJob,
   updateJob,
   deleteJob,
@@ -705,6 +784,7 @@ module.exports = {
   getJobDetails,
   applyToJob,
   getApplicationHistory,
+  getApplicationsForJob,
   saveJob,
   getJobsStats,
   getJobCategories

@@ -27,6 +27,15 @@ export type ApplicationSummary = {
   job: JobModel;
 };
 
+export type RecruiterJob = JobModel & { stats?: { applications?: number; views?: number; saves?: number } };
+export type JobApplication = {
+  _id: string;
+  status: ApplicationSummary['status'];
+  appliedAt?: string;
+  matchScore?: number;
+  user?: { name: string; email: string };
+};
+
 export const jobService = {
   async getMatchingJobs(params: Partial<{ page: number; limit: number; category: string; type: string; location: string; minSalary: number; experience: string; remote: boolean; }>): Promise<MatchingJob[]> {
     const { data } = await api.get('/api/jobs/user/matching', { params });
@@ -81,6 +90,30 @@ export const jobService = {
   async getCategories(): Promise<Array<{ name: string; count: number; label: string }>> {
     const { data } = await api.get('/api/jobs/categories');
     return data?.data?.categories || [];
+  },
+
+  // Recruiter endpoints
+  async getMyJobs(params: Partial<{ page: number; limit: number }>): Promise<{ jobs: RecruiterJob[]; total: number; page: number; pages: number; }> {
+    const { data } = await api.get('/api/jobs/my', { params });
+    const payload = data?.data || {};
+    return { jobs: payload.jobs || [], total: payload.pagination?.total || 0, page: payload.pagination?.page || 1, pages: payload.pagination?.pages || 1 };
+  },
+
+  async getJobApplications(jobId: string): Promise<JobApplication[]> {
+    const { data } = await api.get(`/api/jobs/${jobId}/applications`);
+    const list: any[] = data?.data?.applications || [];
+    return list.map(a => ({
+      _id: a?._id,
+      status: a?.status,
+      appliedAt: a?.appliedAt || a?.createdAt,
+      matchScore: a?.matchScore,
+      user: a?.userId,
+    }));
+  },
+
+  async updateApplicationStatus(applicationId: string, status: ApplicationSummary['status'], notes?: string): Promise<any> {
+    const { data } = await api.patch(`/api/jobs/applications/${applicationId}/status`, { status, notes });
+    return data;
   },
 };
 

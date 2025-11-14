@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fi';
 import sidebarImage from '../assets/sidebar-image.jpg';
 import skyhireLogo from '../assets/skyhire-logo.png'; // Assure-toi d'avoir ce fichier
+import { authService } from '../services/authService';
 
 const menuItems = [
   { name: 'Dashboard', path: '/', Icon: FiLayout },
@@ -25,6 +26,7 @@ const menuItems = [
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
+  const currentUser = authService.getCurrentUser();
 
   return (
     <aside className="relative flex w-72 min-h-screen flex-col overflow-hidden rounded-[28px] text-white shadow-[0_20px_50px_rgba(12,14,32,0.3)]">
@@ -105,6 +107,60 @@ const Sidebar: React.FC = () => {
               </NavLink>
             );
           })}
+
+          {currentUser?.role === 'candidate' && (
+            <NavLink
+              to="/applications"
+              className={`group relative flex items-center justify-between rounded-3xl border px-5 py-4 transition-all duration-300 ${
+                location.pathname === '/applications'
+                  ? 'border-white/60 bg-white/20 shadow-[0_18px_40px_rgba(6,10,38,0.45)]'
+                  : 'border-white/10 bg-white/5 hover:border-white/30 hover:bg-white/10'
+              }`}
+            >
+              <div className="flex items-center gap-4">
+                <span className={`flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-300 ${
+                  location.pathname === '/applications' ? 'bg-gradient-to-br from-white to-white/70 text-[#312456]' : 'bg-white/10 text-white group-hover:bg-white/20'
+                }`}>
+                  <FiFileText className="text-2xl" />
+                </span>
+                <span className={`font-montessart text-lg tracking-wide transition-colors ${
+                  location.pathname === '/applications' ? 'font-semibold text-white' : 'text-white/80 group-hover:text-white'
+                }`}>
+                  My Applications
+                </span>
+              </div>
+              <FiChevronRight className={`text-xl transition-colors ${
+                location.pathname === '/applications' ? 'text-white' : 'text-white/40 group-hover:text-white'
+              }`} />
+            </NavLink>
+          )}
+
+          {(currentUser?.role === 'recruiter' || currentUser?.role === 'admin') && (
+            <NavLink
+              to="/jobs/my"
+              className={`group relative flex items-center justify-between rounded-3xl border px-5 py-4 transition-all duration-300 ${
+                location.pathname === '/jobs/my'
+                  ? 'border-white/60 bg-white/20 shadow-[0_18px_40px_rgba(6,10,38,0.45)]'
+                  : 'border-white/10 bg-white/5 hover:border-white/30 hover:bg-white/10'
+              }`}
+            >
+              <div className="flex items-center gap-4">
+                <span className={`flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-300 ${
+                  location.pathname === '/jobs/my' ? 'bg-gradient-to-br from-white to-white/70 text-[#312456]' : 'bg-white/10 text-white group-hover:bg-white/20'
+                }`}>
+                  <FiSend className="text-2xl" />
+                </span>
+                <span className={`font-montessart text-lg tracking-wide transition-colors ${
+                  location.pathname === '/jobs/my' ? 'font-semibold text-white' : 'text-white/80 group-hover:text-white'
+                }`}>
+                  My Jobs
+                </span>
+              </div>
+              <FiChevronRight className={`text-xl transition-colors ${
+                location.pathname === '/jobs/my' ? 'text-white' : 'text-white/40 group-hover:text-white'
+              }`} />
+            </NavLink>
+          )}
         </nav>
 
         {/* Sign Out réduit */}

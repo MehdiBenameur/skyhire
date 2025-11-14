@@ -15,7 +15,9 @@ const {
   deleteJob,
   getApplicationDetails,
   updateApplicationStatus,
-  addApplicationCommunication
+  addApplicationCommunication,
+  getMyJobs,
+  getApplicationsForJob
 } = require('../controllers/jobsController');
 const { protect, authorizeRoles } = require('../middleware/auth');
 
@@ -23,8 +25,10 @@ const router = express.Router();
 
 // Routes publiques
 router.get('/categories', getJobCategories);
+// Définir /my avant /:id pour éviter la capture par la route générique
+router.get('/my', protect, authorizeRoles('recruiter','admin'), getMyJobs);
 router.get('/', getAllJobs);
-router.get('/:id', getJobDetails);
+router.get('/:id([0-9a-fA-F]{24})', getJobDetails);
 
 // Routes protégées
 router.use(protect);
@@ -33,10 +37,11 @@ router.get('/user/matching', getMatchingJobsForUser);
 router.get('/user/applications', getApplicationHistory);
 router.get('/user/applications/:id', getApplicationDetails); // NOUVEAU
 router.get('/user/stats', getJobsStats);
-router.post('/:id/apply', applyToJob);
-router.post('/:id/save', saveJob);
+router.post('/:id([0-9a-fA-F]{24})/apply', applyToJob);
+router.post('/:id([0-9a-fA-F]{24})/save', saveJob);
 
 // Routes pour recruteurs/admins - AJOUTER
+router.get('/:id([0-9a-fA-F]{24})/applications', authorizeRoles('recruiter','admin'), getApplicationsForJob);
 router.post('/', authorizeRoles('recruiter','admin'), createJob);
 router.put('/:id', authorizeRoles('recruiter','admin'), updateJob);
 router.delete('/:id', authorizeRoles('recruiter','admin'), deleteJob);
