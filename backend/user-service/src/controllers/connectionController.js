@@ -9,6 +9,12 @@ const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 const notify = async (req, { userId, title, message, type = 'connection', data = {}, priority = 'medium' }) => {
   try {
+    // Respect user preferences (connection notifications)
+    if (type === 'connection') {
+      const profile = await UserProfile.findOne({ userId }).select('preferences');
+      const enabled = profile?.preferences?.notifications?.connection !== false;
+      if (!enabled) return; // Skip notification if disabled
+    }
     await axios.post(`${NOTIF_URL}/api/notifications`, {
       userId,
       type,

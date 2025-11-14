@@ -71,5 +71,22 @@ const getMultipleUsersInfo = async (userIds, authToken) => {
 
 module.exports = {
   getUserInfo,
-  getMultipleUsersInfo
+  getMultipleUsersInfo,
+  async getUserPrefs(userId, authToken) {
+    try {
+      const resp = await axios.get(`${USER_SERVICE_URL}/api/users/${userId}`, {
+        headers: { 'Authorization': authToken, 'Content-Type': 'application/json' },
+        timeout: 5000,
+      });
+      const user = resp?.data?.data?.user || {};
+      const prefs = user?.preferences?.notifications || {};
+      return {
+        message: prefs.message !== false,
+        connection: prefs.connection !== false,
+        job: prefs.job !== false,
+      };
+    } catch (e) {
+      return { message: true, connection: true, job: true };
+    }
+  }
 };

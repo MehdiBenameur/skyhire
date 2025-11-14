@@ -4,6 +4,45 @@ const Application = require('../models/Application');
 const { getMatchingJobs } = require('../services/jobMatching');
 const { get } = require('http');
 const mongoose = require('mongoose');
+const axios = require('axios');
+
+const NOTIF_URL = process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:5007';
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://localhost:5002';
+
+const getUserPrefs = async (userId, req) => {
+  try {
+    const resp = await axios.get(`${USER_SERVICE_URL}/api/users/${userId}`, {
+      headers: { Authorization: req.headers.authorization || '', 'Content-Type': 'application/json' },
+      timeout: 5000,
+    });
+    const prefs = resp?.data?.data?.user?.preferences?.notifications || {};
+    return {
+      job: prefs.job !== false,
+    };
+  } catch (e) {
+    return { job: true };
+  }
+};
+
+const notifyIfAllowed = async (req, { userId, title, message, data }) => {
+  const prefs = await getUserPrefs(userId, req);
+  if (!prefs.job) return; // Respect user preference
+  try {
+    await axios.post(`${NOTIF_URL}/api/notifications`, {
+      userId,
+      type: 'job',
+      title,
+      message,
+      data: data || {},
+      priority: 'medium'
+    }, {
+      headers: { Authorization: req.headers.authorization || '' },
+      timeout: 5000,
+    });
+  } catch (e) {
+    console.error('Failed to create job notification:', e?.message);
+  }
+};
 
 // Obtenir les jobs postés par l'utilisateur courant (recruteur/admin)
 const getMyJobs = async (req, res) => {
@@ -311,6 +350,18 @@ const applyToJob = async (req, res) => {
 
     // Incrémenter le compteur de candidatures du job
     await job.incrementApplications();
+
+    // Notify recruiter about new application (respect preferences)
+    try {
+      if (job.postedBy) {
+        await notifyIfAllowed(req, {
+          userId: job.postedBy,
+          title: 'New application',
+          message: `A new application was submitted for ${job.title}`,
+          data: { jobId: job._id, applicantId: req.user.id, applicationId: application._id }
+        });
+      }
+    } catch (_) {}
 
     res.status(201).json({
       status: 'success',
@@ -706,6 +757,16 @@ const updateApplicationStatus = async (req, res) => {
         message: 'Application not found'
       });
     }
+
+    // Notify candidate about status update (respect preferences)
+    try {
+      await notifyIfAllowed(req, {
+        userId: application.userId,
+        title: 'Application status updated',
+        message: `Your application for ${application.jobId?.title || 'a job'} is now '${status}'`,
+        data: { applicationId: application._id, jobId: application.jobId?._id }
+      });
+    } catch (_) {}
 
     res.json({
       status: 'success',

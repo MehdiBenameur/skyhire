@@ -345,10 +345,10 @@ const getUserById = async (req, res) => {
       });
     }
 
-    // 🔥 SOLUTION : Retourner les données de base sans populate
+    // SOLUTION : Retourner les données de base sans populate
     const userData = {
       _id: userId, // Utiliser l'ID directement
-      name: profile.headline || 'Aviation Professional', // Fallback si pas de nom
+      name: profile.name || profile.headline || 'Aviation Professional', // Fallback si pas de nom
       email: '', // Pas d'email dans UserProfile
       avatar: '', // Pas d'avatar dans UserProfile  
       role: 'candidate', // Valeur par défaut
@@ -359,10 +359,17 @@ const getUserById = async (req, res) => {
         skills: profile.skills,
         bio: profile.bio,
         stats: profile.stats
+      },
+      preferences: {
+        notifications: {
+          message: profile?.preferences?.notifications?.message !== false,
+          connection: profile?.preferences?.notifications?.connection !== false,
+          job: profile?.preferences?.notifications?.job !== false,
+        }
       }
     };
 
-    console.log('✅ [USER-SERVICE] User data prepared:', userData.name);
+    console.log(' [USER-SERVICE] User data prepared:', userData.name);
 
     res.json({
       status: 'success',

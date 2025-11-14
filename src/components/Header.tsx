@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FiUser, FiLogOut, FiBell, FiSettings, FiChevronDown, FiMessageCircle } from 'react-icons/fi';
 import { authService } from '../services/authService';
 import { chatService } from '../services/chatService';
+import { notificationService } from '../services/notificationService';
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -24,9 +25,19 @@ const Header: React.FC = () => {
         if (mounted) setUnreadMessages(0);
       }
     };
+    const loadNotif = async () => {
+      try {
+        const stats = await notificationService.getStats();
+        if (mounted) setUnreadNotifications(stats.unread || 0);
+      } catch {
+        if (mounted) setUnreadNotifications(0);
+      }
+    };
     load();
-    const id = setInterval(load, 15000); // refresh periodically
-    return () => { mounted = false; clearInterval(id); };
+    loadNotif();
+    const id = setInterval(load, 15000); // refresh chat periodically
+    const id2 = setInterval(loadNotif, 30000); // refresh notifications periodically
+    return () => { mounted = false; clearInterval(id); clearInterval(id2); };
   }, []);
 
   const handleLogout = () => {

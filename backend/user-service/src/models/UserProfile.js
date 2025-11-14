@@ -106,6 +106,20 @@ const userProfileSchema = new mongoose.Schema({
       type: Boolean,
       default: true
     },
+    notifications: {
+      message: {
+        type: Boolean,
+        default: true
+      },
+      connection: {
+        type: Boolean,
+        default: true
+      },
+      job: {
+        type: Boolean,
+        default: true
+      }
+    },
     profileVisibility: {
       type: String,
       enum: ['public', 'connections', 'private'],

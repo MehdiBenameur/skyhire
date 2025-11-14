@@ -1,7 +1,10 @@
 // chat-service/src/controllers/chatController.js
 const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
-const { getMultipleUsersInfo, getUserInfo } = require('../services/userService');
+const { getMultipleUsersInfo, getUserInfo, getUserPrefs } = require('../services/userService');
+
+const axios = require('axios');
+const NOTIF_URL = process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:5007';
 
 // Obtenir les conversations de l'utilisateur
 const getConversations = async (req, res) => {
@@ -306,6 +309,28 @@ const sendMessage = async (req, res) => {
       // Ne pas crash l'API à cause d'une erreur socket
     }
 
+    // Notifications pour les autres participants (respecter les préférences)
+    try {
+      const others = (conversation.participants || []).filter(p => String(p.userId) !== String(req.user.id));
+      const preview = (content || 'Attachment').slice(0, 140);
+      const authHeader = req.headers.authorization || '';
+      await Promise.all(others.map(async (p) => {
+        const prefs = await getUserPrefs(p.userId, authHeader);
+        if (prefs && prefs.message === false) return;
+        await axios.post(`${NOTIF_URL}/api/notifications`, {
+          userId: p.userId,
+          type: 'message',
+          title: 'New message',
+          message: preview,
+          data: { conversationId: id, senderId: req.user.id }
+        }, {
+          headers: { Authorization: authHeader },
+          timeout: 5000,
+        });
+      }));
+    } catch (notifyErr) {
+      console.error('Failed to create message notification:', notifyErr?.message);
+    }
   } catch (error) {
     console.error('Send message error:', error);
     res.status(500).json({
@@ -314,7 +339,6 @@ const sendMessage = async (req, res) => {
     });
   }
 };
-
 
 // Démarrer une nouvelle conversation
 const startConversation = async (req, res) => {
@@ -440,8 +464,7 @@ const markAsRead = async (req, res) => {
       },
       {
         $set: {
-          'participants.$.lastRead': new Date(),
-          unreadCount: 0
+          'participants.$.lastRead': new Date()
         }
       },
       { new: true }

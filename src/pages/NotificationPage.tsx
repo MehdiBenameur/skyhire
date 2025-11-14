@@ -1,72 +1,105 @@
 // pages/NotificationsPage.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FiBell, FiCheck, FiTrash2, FiSettings, FiUser, FiMessageCircle, FiAward } from 'react-icons/fi';
+import { notificationService, NotificationItem } from '../services/notificationService';
+import { useNavigate } from 'react-router-dom';
+import { userService } from '../services/userService';
+import { useToast } from '../context/ToastContext';
 
-interface Notification {
+interface Notification extends Omit<NotificationItem, '_id' | 'createdAt'> {
   id: string;
-  type: 'connection' | 'message' | 'job' | 'system';
-  title: string;
-  message: string;
-  timestamp: Date;
-  read: boolean;
-  actionUrl?: string;
+  timestamp: string;
 }
 
 const NotificationsPage: React.FC = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      type: 'connection',
-      title: 'New Connection Request',
-      message: 'Sarah Johnson wants to connect with you',
-      timestamp: new Date(Date.now() - 300000), // 5 minutes ago
-      read: false,
-      actionUrl: '/network'
-    },
-    {
-      id: '2',
-      type: 'message',
-      title: 'New Message',
-      message: 'James Wilson sent you a message',
-      timestamp: new Date(Date.now() - 1800000), // 30 minutes ago
-      read: false,
-      actionUrl: '/chat'
-    },
-    {
-      id: '3',
-      type: 'job',
-      title: 'Job Match',
-      message: 'New position at Emirates matches your profile',
-      timestamp: new Date(Date.now() - 3600000), // 1 hour ago
-      read: true,
-      actionUrl: '/jobs'
-    },
-    {
-      id: '4',
-      type: 'system',
-      title: 'CV Analysis Complete',
-      message: 'Your CV has been analyzed with 85% score',
-      timestamp: new Date(Date.now() - 86400000), // 1 day ago
-      read: true
+  const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
+  const [saving, setSaving] = useState<boolean>(false);
+  const [notifSettings, setNotifSettings] = useState<{
+    email: boolean;
+    push: boolean;
+    message: boolean;
+    connection: boolean;
+    job: boolean;
+  }>({
+    email: true,
+    push: true,
+    message: true,
+    connection: true,
+    job: true,
+  });
+
+  const load = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const { notifications: list } = await notificationService.getList({ page: 1, limit: 50 });
+      const mapped: Notification[] = (list || []).map((n) => ({
+        id: n._id,
+        type: (n.type as any) || 'system',
+        title: n.title,
+        message: n.message,
+        timestamp: n.createdAt,
+        read: n.read,
+        data: n.data,
+        userId: n.userId,
+      }));
+      setNotifications(mapped);
+    } catch (e: any) {
+      setError(e?.message || 'Failed to load notifications');
+    } finally {
+      setLoading(false);
     }
-  ]);
-
-  const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(notif =>
-        notif.id === id ? { ...notif, read: true } : notif
-      )
-    );
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev =>
-      prev.map(notif => ({ ...notif, read: true }))
-    );
+  useEffect(() => {
+    load();
+    (async () => {
+      try {
+        const profile = await userService.getProfile();
+        const ns = (profile?.preferences && (profile.preferences as any).notifications) || {};
+        setNotifSettings({
+          email: ns.email !== false,
+          push: ns.push !== false,
+          message: ns.message !== false,
+          connection: ns.connection !== false,
+          job: ns.job !== false,
+        });
+      } catch {
+        // noop
+      }
+    })();
+  }, []);
+
+  const markAsRead = async (id: string) => {
+    try {
+      await notificationService.markAsRead(id);
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    } catch {
+      // noop
+    }
   };
 
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(notif => notif.id !== id));
+  const markAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    } catch {
+      // noop
+    }
+  };
+
+  const deleteNotification = async (id: string) => {
+    try {
+      await notificationService.delete(id);
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    } catch {
+      // noop
+    }
   };
 
   const getNotificationIcon = (type: Notification['type']) => {
@@ -84,9 +117,10 @@ const NotificationsPage: React.FC = () => {
     }
   };
 
-  const getTimeAgo = (timestamp: Date) => {
+  const getTimeAgo = (timestamp: string | Date) => {
+    const ts = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
     const now = new Date();
-    const diff = now.getTime() - timestamp.getTime();
+    const diff = now.getTime() - ts.getTime();
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
@@ -96,7 +130,46 @@ const NotificationsPage: React.FC = () => {
     return `${days} day${days > 1 ? 's' : ''} ago`;
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  // Derived stats
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayCount = notifications.filter((n) => {
+    const ts = new Date(n.timestamp);
+    return ts >= startOfToday;
+  }).length;
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const weekCount = notifications.filter((n) => {
+    const ts = new Date(n.timestamp);
+    return ts >= weekAgo;
+  }).length;
+
+  const goTo = (n: Notification) => {
+    let to = '/notifications';
+    if (n.type === 'message') to = '/chat';
+    else if (n.type === 'connection') to = '/network';
+    else if (n.type === 'job') {
+      const jobId = (n as any)?.data?.jobId;
+      to = jobId ? `/jobs?jobId=${jobId}` : '/jobs';
+    }
+    navigate(to);
+  };
+
+  const saveSettings = async () => {
+    try {
+      setSaving(true);
+      const profile = await userService.getProfile();
+      const prefs = { ...(profile?.preferences || {}), notifications: { ...notifSettings } };
+      await userService.updateProfile({ preferences: prefs });
+      setSettingsOpen(false);
+      showSuccess('Notification settings saved');
+    } catch (e: any) {
+      showError(e?.response?.data?.message || e?.message || 'Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-10 py-8">
@@ -139,7 +212,7 @@ const NotificationsPage: React.FC = () => {
                   Mark All Read
                 </button>
               )}
-              <button className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-montessart font-semibold hover:bg-gray-200 transition-colors">
+              <button onClick={() => setSettingsOpen(true)} className="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-montessart font-semibold hover:bg-gray-200 transition-colors">
                 <FiSettings className="text-lg" />
                 Settings
               </button>
@@ -148,7 +221,11 @@ const NotificationsPage: React.FC = () => {
 
           {/* Notifications List */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-            {notifications.length > 0 ? (
+            {loading ? (
+              <div className="p-6 text-gray-600 font-montessart">Loading...</div>
+            ) : error ? (
+              <div className="p-6 text-red-600 font-montessart">{error}</div>
+            ) : notifications.length > 0 ? (
               <div className="divide-y divide-gray-100">
                 {notifications.map((notification) => (
                   <div
@@ -183,11 +260,9 @@ const NotificationsPage: React.FC = () => {
                             <span className="text-gray-400 font-montessart text-sm">
                               {getTimeAgo(notification.timestamp)}
                             </span>
-                            {notification.actionUrl && (
-                              <button className="text-[#423772] font-montessart text-sm font-semibold hover:text-[#312456] transition-colors">
-                                View
-                              </button>
-                            )}
+                            <button onClick={() => goTo(notification)} className="text-[#423772] font-montessart text-sm font-semibold hover:text-[#312456] transition-colors">
+                              View
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -243,11 +318,11 @@ const NotificationsPage: React.FC = () => {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 font-montessart">Today</span>
-                <span className="text-xl font-bold text-gray-800 font-emirates">3</span>
+                <span className="text-xl font-bold text-gray-800 font-emirates">{todayCount}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 font-montessart">This Week</span>
-                <span className="text-xl font-bold text-gray-800 font-emirates">12</span>
+                <span className="text-xl font-bold text-gray-800 font-emirates">{weekCount}</span>
               </div>
             </div>
           </div>
@@ -279,6 +354,73 @@ const NotificationsPage: React.FC = () => {
           </div>
         </div>
       </div>
+      {settingsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setSettingsOpen(false)} />
+          <div className="relative bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-lg p-6">
+            <h3 className="text-xl font-semibold text-gray-900 font-emirates mb-4">Notification Settings</h3>
+            <div className="space-y-3 mb-6">
+              <label className="flex items-center gap-3 text-sm font-montessart">
+                <input
+                  type="checkbox"
+                  checked={notifSettings.email}
+                  onChange={(e) => setNotifSettings((s) => ({ ...s, email: e.target.checked }))}
+                  className="rounded text-[#423772]"
+                />
+                Email Notifications
+              </label>
+              <label className="flex items-center gap-3 text-sm font-montessart">
+                <input
+                  type="checkbox"
+                  checked={notifSettings.push}
+                  onChange={(e) => setNotifSettings((s) => ({ ...s, push: e.target.checked }))}
+                  className="rounded text-[#423772]"
+                />
+                Push Notifications
+              </label>
+              <label className="flex items-center gap-3 text-sm font-montessart">
+                <input
+                  type="checkbox"
+                  checked={notifSettings.message}
+                  onChange={(e) => setNotifSettings((s) => ({ ...s, message: e.target.checked }))}
+                  className="rounded text-[#423772]"
+                />
+                New Messages
+              </label>
+              <label className="flex items-center gap-3 text-sm font-montessart">
+                <input
+                  type="checkbox"
+                  checked={notifSettings.connection}
+                  onChange={(e) => setNotifSettings((s) => ({ ...s, connection: e.target.checked }))}
+                  className="rounded text-[#423772]"
+                />
+                Connection Requests
+              </label>
+              <label className="flex items-center gap-3 text-sm font-montessart">
+                <input
+                  type="checkbox"
+                  checked={notifSettings.job}
+                  onChange={(e) => setNotifSettings((s) => ({ ...s, job: e.target.checked }))}
+                  className="rounded text-[#423772]"
+                />
+                Job Updates
+              </label>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setSettingsOpen(false)} className="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-montessart font-semibold hover:bg-gray-200 transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={saveSettings}
+                disabled={saving}
+                className="bg-[#423772] text-white px-4 py-2 rounded-lg font-montessart font-semibold hover:bg-[#312456] transition-colors disabled:opacity-60"
+              >
+                {saving ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

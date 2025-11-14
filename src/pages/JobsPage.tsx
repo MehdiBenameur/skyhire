@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { FiMapPin, FiDollarSign, FiFilter, FiTrendingUp, FiHeart, FiShare2 } from "react-icons/fi";
 import { jobService, MatchingJob } from "../services/jobService";
 import { chatService } from "../services/chatService";
+import { userService } from "../services/userService";
 import { useToast } from '../context/ToastContext';
 import { authService } from '../services/authService';
 import { Link, useLocation } from 'react-router-dom';
@@ -36,8 +37,8 @@ const JobsPage: React.FC = () => {
     setSelectedConvId(null);
     try {
       setConvLoading(true);
-      const { conversations } = await chatService.getConversations();
-      setConvs(conversations || []);
+      const connections = await userService.getConnections();
+      setConvs(connections || []);
     } catch (e: any) {
       showError(e?.response?.data?.message || e?.message || 'Failed to load conversations');
     } finally {
@@ -51,7 +52,9 @@ const JobsPage: React.FC = () => {
       setSendingShare(true);
       const link = `/jobs?jobId=${shareTarget.id}`;
       const content = `Check this job: ${shareTarget.company} - ${shareTarget.title}${shareTarget.location ? ' • ' + shareTarget.location : ''}\nOpen: ${link}`;
-      await chatService.sendMessage(selectedConvId, { content, type: 'text' });
+      // selectedConvId now holds the peerId (connection target)
+      const conv = await chatService.startConversation([selectedConvId]);
+      await chatService.sendMessage(conv._id, { content, type: 'text' });
       showSuccess('Job shared successfully');
       setShareOpen(false);
       setShareTarget(null);
@@ -473,14 +476,14 @@ const JobsPage: React.FC = () => {
               ) : (
                 <ul className="divide-y divide-gray-100">
                   {convs.map((c: any) => (
-                    <li key={c._id} className={`p-3 cursor-pointer flex items-center justify-between ${selectedConvId === c._id ? 'bg-[#423772]/10' : 'hover:bg-gray-50'}`} onClick={() => setSelectedConvId(c._id)}>
+                    <li key={c._id} className={`p-3 cursor-pointer flex items-center justify-between ${selectedConvId === c.peerId ? 'bg-[#423772]/10' : 'hover:bg-gray-50'}`} onClick={() => setSelectedConvId(c.peerId)}>
                       <div className="min-w-0">
-                        <p className="font-montessart font-semibold text-gray-800 truncate">{c.title || (c.participants?.map((p: any) => p.user?.name).filter(Boolean).join(', ') || 'Conversation')}</p>
-                        {c.lastMessage?.content && (
-                          <p className="text-gray-500 text-sm font-montessart truncate">{c.lastMessage.content}</p>
+                        <p className="font-montessart font-semibold text-gray-800 truncate">{c.user?.name || 'Connection'}</p>
+                        {c.user?.headline && (
+                          <p className="text-gray-500 text-sm font-montessart truncate">{c.user.headline}</p>
                         )}
                       </div>
-                      <input type="radio" checked={selectedConvId === c._id} readOnly className="ml-3" />
+                      <input type="radio" checked={selectedConvId === c.peerId} readOnly className="ml-3" />
                     </li>
                   ))}
                 </ul>

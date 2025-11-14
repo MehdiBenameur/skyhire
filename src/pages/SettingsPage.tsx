@@ -1,6 +1,6 @@
 // pages/SettingsPage.tsx
 import React, { useState } from 'react';
-import { FiSettings, FiUser, FiBell, FiLock, FiEye, FiEyeOff, FiSave, FiTrash2 } from 'react-icons/fi';
+import { FiUser, FiLock, FiEye, FiEyeOff, FiSave, FiTrash2 } from 'react-icons/fi';
 import { authService } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
@@ -8,7 +8,7 @@ import { useToast } from '../context/ToastContext';
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { showSuccess, showError, showInfo } = useToast();
-  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'notifications' | 'privacy'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'security'>('profile');
   const [isLoading, setIsLoading] = useState(false);
   
   // Profile Settings
@@ -29,23 +29,7 @@ const SettingsPage: React.FC = () => {
     showConfirmPassword: false
   });
 
-  // Notification Settings
-  const [notifications, setNotifications] = useState({
-    emailNotifications: true,
-    pushNotifications: true,
-    connectionRequests: true,
-    jobMatches: true,
-    messages: true,
-    securityAlerts: true
-  });
-
-  // Privacy Settings
-  const [privacy, setPrivacy] = useState({
-    profileVisibility: 'public',
-    showEmail: false,
-    showPhone: false,
-    dataSharing: true
-  });
+  
 
   const handleSaveProfile = async () => {
     setIsLoading(true);
@@ -112,9 +96,7 @@ const SettingsPage: React.FC = () => {
             <nav className="space-y-2">
               {[
                 { id: 'profile', label: 'Profile Settings', icon: FiUser },
-                { id: 'security', label: 'Security', icon: FiLock },
-                { id: 'notifications', label: 'Notifications', icon: FiBell },
-                { id: 'privacy', label: 'Privacy', icon: FiSettings }
+                { id: 'security', label: 'Security', icon: FiLock }
               ].map((item) => {
                 const Icon = item.icon;
                 return (
@@ -329,136 +311,6 @@ const SettingsPage: React.FC = () => {
                       Delete Account
                     </button>
                   </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'notifications' && (
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
-                  <FiBell className="text-2xl text-white" />
-                </div>
-                <h2 className="text-2xl font-semibold text-gray-800 font-emirates">
-                  Notification Settings
-                </h2>
-              </div>
-
-              <div className="space-y-6">
-                {Object.entries(notifications).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
-                    <div>
-                      <p className="font-semibold text-gray-800 font-montessart capitalize">
-                        {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                      </p>
-                      <p className="text-gray-600 font-montessart text-sm">
-                        Receive notifications for {key.toLowerCase().replace(/([A-Z])/g, ' $1')}
-                      </p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={value}
-                        onChange={(e) => setNotifications(prev => ({ ...prev, [key]: e.target.checked }))}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#423772]"></div>
-                    </label>
-                  </div>
-                ))}
-
-                <div className="flex justify-end">
-                  <button
-                    onClick={handleSaveProfile}
-                    disabled={isLoading}
-                    className="flex items-center gap-2 bg-[#423772] text-white px-6 py-3 rounded-xl font-montessart font-semibold hover:bg-[#312456] transition-colors disabled:opacity-60"
-                  >
-                    <FiSave className="text-lg" />
-                    {isLoading ? 'Saving...' : 'Save Preferences'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'privacy' && (
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
-                  <FiSettings className="text-2xl text-white" />
-                </div>
-                <h2 className="text-2xl font-semibold text-gray-800 font-emirates">
-                  Privacy Settings
-                </h2>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 font-montessart mb-2">
-                    Profile Visibility
-                  </label>
-                  <select
-                    value={privacy.profileVisibility}
-                    onChange={(e) => setPrivacy(prev => ({ ...prev, profileVisibility: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-xl p-3 font-montessart focus:ring-2 focus:ring-[#423772] focus:border-[#423772] outline-none transition-all"
-                  >
-                    <option value="public">Public - Anyone can see my profile</option>
-                    <option value="connections">Connections Only</option>
-                    <option value="private">Private - Only me</option>
-                  </select>
-                </div>
-
-                <div className="space-y-4">
-                  <label className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={privacy.showEmail}
-                      onChange={(e) => setPrivacy(prev => ({ ...prev, showEmail: e.target.checked }))}
-                      className="w-4 h-4 text-[#423772] rounded focus:ring-[#423772]"
-                    />
-                    <div>
-                      <p className="font-semibold text-gray-800 font-montessart">Show Email Address</p>
-                      <p className="text-gray-600 font-montessart text-sm">Allow others to see your email address</p>
-                    </div>
-                  </label>
-
-                  <label className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={privacy.showPhone}
-                      onChange={(e) => setPrivacy(prev => ({ ...prev, showPhone: e.target.checked }))}
-                      className="w-4 h-4 text-[#423772] rounded focus:ring-[#423772]"
-                    />
-                    <div>
-                      <p className="font-semibold text-gray-800 font-montessart">Show Phone Number</p>
-                      <p className="text-gray-600 font-montessart text-sm">Allow connections to see your phone number</p>
-                    </div>
-                  </label>
-
-                  <label className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={privacy.dataSharing}
-                      onChange={(e) => setPrivacy(prev => ({ ...prev, dataSharing: e.target.checked }))}
-                      className="w-4 h-4 text-[#423772] rounded focus:ring-[#423772]"
-                    />
-                    <div>
-                      <p className="font-semibold text-gray-800 font-montessart">Data Sharing for Improvement</p>
-                      <p className="text-gray-600 font-montessart text-sm">Help us improve by sharing anonymous usage data</p>
-                    </div>
-                  </label>
-                </div>
-
-                <div className="flex justify-end">
-                  <button
-                    onClick={handleSaveProfile}
-                    disabled={isLoading}
-                    className="flex items-center gap-2 bg-[#423772] text-white px-6 py-3 rounded-xl font-montessart font-semibold hover:bg-[#312456] transition-colors disabled:opacity-60"
-                  >
-                    <FiSave className="text-lg" />
-                    {isLoading ? 'Saving...' : 'Save Privacy Settings'}
-                  </button>
                 </div>
               </div>
             </div>

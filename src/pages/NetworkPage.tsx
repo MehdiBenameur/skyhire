@@ -3,6 +3,7 @@ import { FiSearch, FiMessageCircle, FiCheck, FiUserPlus, FiUsers, FiClock, FiSen
 import { useToast } from "../context/ToastContext";
 import { userService } from "../services/userService";
 import { authService } from "../services/authService";
+import { chatService } from "../services/chatService";
 import { useNavigate } from 'react-router-dom';
 
 const NetworkPage: React.FC = () => {
@@ -15,6 +16,7 @@ const NetworkPage: React.FC = () => {
   const [discoverProfiles, setDiscoverProfiles] = useState<any[]>([]);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState<number>(0);
 
   // Handlers pour les interactions
   const initials = (name?: string) => (name || 'U').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
@@ -34,6 +36,7 @@ const NetworkPage: React.FC = () => {
         airline: c.user?.location || '',
         connected: true,
         avatar: initials(c.user?.name),
+        updatedAt: c.updatedAt,
       }));
       const mappedReqs = (reqs || []).map((r: any) => ({
         id: r._id,
@@ -66,6 +69,19 @@ const NetworkPage: React.FC = () => {
   useEffect(() => {
     loadNetwork();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const loadMsg = async () => {
+      try {
+        const { conversations } = await chatService.getConversations({ limit: 50 });
+        const total = (conversations || []).reduce((acc: number, c: any) => acc + (c.unreadCount || 0), 0);
+        setUnreadMessages(total);
+      } catch {
+        setUnreadMessages(0);
+      }
+    };
+    loadMsg();
   }, []);
 
   const handleConnect = async (personId: any) => {
@@ -126,6 +142,10 @@ const NetworkPage: React.FC = () => {
     person.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
     person.airline.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Derived stats
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const activeThisWeekCount = connections.filter((c: any) => c.updatedAt && new Date(c.updatedAt) >= weekAgo).length;
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-10 py-8">
@@ -274,7 +294,7 @@ const NetworkPage: React.FC = () => {
                 Your Network
               </h2>
             </div>
-            
+
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 font-montessart">Total Connections</span>
@@ -282,11 +302,11 @@ const NetworkPage: React.FC = () => {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 font-montessart">Active This Week</span>
-                <span className="text-xl font-bold text-green-600 font-emirates">12</span>
+                <span className="text-xl font-bold text-green-600 font-emirates">{activeThisWeekCount}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 font-montessart">Messages</span>
-                <span className="text-xl font-bold text-blue-600 font-emirates">8</span>
+                <span className="text-xl font-bold text-blue-600 font-emirates">{unreadMessages}</span>
               </div>
             </div>
           </div>
@@ -344,7 +364,6 @@ const NetworkPage: React.FC = () => {
               </p>
             )}
           </div>
-
           {/* Quick Actions */}
           <div className="bg-gradient-to-br from-[#423772] to-[#6D5BA6] rounded-2xl p-6 text-white">
             <h3 className="font-semibold font-montessart mb-3">Grow Your Network</h3>
