@@ -1,0 +1,27 @@
+{
+  "metadata": {
+    "export_date": "2025-11-11T22:05:41.181478",
+    "version": "2.0",
+    "source": "Bilingual_CV_Analyzer",
+    "language_support": [
+      "fr",
+      "en"
+    ],
+    "detected_language": "fr"
+  },
+  "cv_data": {
+    "nom_complet": "",
+    "intitule_poste": "",
+    "contact": {
+      "telephone": "",
+      "email": "",
+      "adresse": "20211 Omopstet"
+    },
+    "profil": "",
+    "experiences": [],
+    "formations": [],
+    "competences": [],
+    "langues": [],
+    "centres_interet": []
+  }
+}

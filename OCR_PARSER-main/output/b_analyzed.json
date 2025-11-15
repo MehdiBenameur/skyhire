@@ -1,0 +1,67 @@
+{
+  "metadata": {
+    "export_date": "2025-11-11T22:26:39.222838",
+    "version": "2.0",
+    "source": "Bilingual_CV_Analyzer",
+    "language_support": [
+      "fr",
+      "en"
+    ],
+    "detected_language": "fr"
+  },
+  "cv_data": {
+    "nom_complet": "Sousse Tunisie",
+    "intitule_poste": "Ingénieur",
+    "contact": {
+      "telephone": "",
+      "email": "",
+      "adresse": ""
+    },
+    "profil": "",
+    "experiences": [],
+    "formations": [
+      {
+        "diplome": "Élève ingénieur en 5e année Data Science Intelligence Artificielle à Polytechnique Sousse; après deux années de préparation intégrée. Motivé, organisé et méthodique; je dispose dune solide base en développement logiciel, en analyse de données et en intelligence artificielle. Je cherche un stage de fin détudes (PFE) pour appliquer mes compétences techniques à des projets concrets; innovants et à forte valeur ajoutée."
+      },
+      {
+        "diplome": "COMPÉTENCES TECHNIQUES ÉCOLE POLYTECHNIQUE SOUSSE FILIÈRE DATA SCIENCE & IA Cycle préparatoire intégré (2 ans) Cycle ingénieur : spécialisation en data science; intelligence artificielle et développement logiciel. FORMATIONS TECHNIQUES ET COMPLÉMENTAIRES"
+      }
+    ],
+    "competences": [
+      "Angular",
+      "Css",
+      "Docker",
+      "Html",
+      "Java",
+      "Javascript",
+      "Python",
+      "React",
+      "Sql",
+      "Windows"
+    ],
+    "langues": [
+      {
+        "langue": "Français",
+        "niveau": "Courant"
+      },
+      {
+        "langue": "Anglais",
+        "niveau": "Courant"
+      },
+      {
+        "langue": "Arabe",
+        "niveau": "Courant"
+      },
+      {
+        "langue": "Allemand",
+        "niveau": "Courant"
+      }
+    ],
+    "centres_interet": [
+      "Innovation",
+      "Langues",
+      "Natation",
+      "Voyage"
+    ]
+  }
+}

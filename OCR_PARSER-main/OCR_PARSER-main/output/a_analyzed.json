@@ -1,0 +1,64 @@
+{
+  "metadata": {
+    "export_date": "2025-11-11T22:27:27.579412",
+    "version": "2.0",
+    "source": "Bilingual_CV_Analyzer",
+    "language_support": [
+      "fr",
+      "en"
+    ],
+    "detected_language": "fr"
+  },
+  "cv_data": {
+    "nom_complet": "Soussc Tunisic",
+    "intitule_poste": "Ingénieur",
+    "contact": {
+      "telephone": "",
+      "email": "",
+      "adresse": ""
+    },
+    "profil": "",
+    "experiences": [],
+    "formations": [
+      {
+        "diplome": "Élève ingénieur en se année Data Science & Intelligence Artificielle à Polytechnique Sousse, après deux années de préparation intégrée: Motivé; organisé et méthodiquc je dispose dune solide base en dévcloppement logiciel, en analyse dc données et en intelligence artilicielle. Je cherche un stage de fin détudes (PFF) pour appliquer mes compétences techniques à dcs projets concrets, innovants et à forte valeur ajoutée."
+      },
+      {
+        "diplome": "COMPÉTENCES TECHNIQUES ÉCOLE POLYTECHNIQUE 'SOUSSE - FILIÈRE DATA SCIENCE & /A"
+      },
+      {
+        "diplome": "Cycle préparatoire intégré (2 ans) Cycle ingénieur : spécialisation en data sciencc; intelligence artilicielle ct développement logiciel. FORMATIONS TECHNIQUES ET COMPLÉMENTAIRES"
+      }
+    ],
+    "competences": [
+      "Angular",
+      "Css",
+      "Docker",
+      "Java",
+      "Javascript",
+      "Python",
+      "React",
+      "Windows"
+    ],
+    "langues": [
+      {
+        "langue": "Anglais",
+        "niveau": "Courant"
+      },
+      {
+        "langue": "Arabe",
+        "niveau": "Courant"
+      },
+      {
+        "langue": "Allemand",
+        "niveau": "Courant"
+      }
+    ],
+    "centres_interet": [
+      "Innovation",
+      "Langues",
+      "Natation",
+      "Voyage"
+    ]
+  }
+}

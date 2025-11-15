@@ -1,0 +1,78 @@
+{
+  "metadata": {
+    "export_date": "2025-11-11T22:01:42.555595",
+    "version": "2.0",
+    "source": "Bilingual_CV_Analyzer",
+    "language_support": [
+      "fr",
+      "en"
+    ],
+    "detected_language": "fr"
+  },
+  "cv_data": {
+    "nom_complet": "Jean Dupont Ingenieur",
+    "intitule_poste": "Ingénieur",
+    "contact": {
+      "telephone": "01 23 45 67 89",
+      "email": "dupont@email.com",
+      "adresse": "75010 Paris"
+    },
+    "profil": "",
+    "experiences": [
+      {
+        "poste": "professionnelle Ingénieur en développement logiciel chez ABC Software (2018-2021) Développement de logiciels de gestion pour des clients internationaux Gestion de projet pour plusieurs projets simultanément Rédaction de documentation technique et formation des utilisateurs Développeur logiciel chez XYZ Company (2016-2018) Développement de logiciels de suivi de projets pour une entreprise de construction Conception et implémentation de bases de données SQL Développement de scripts en Python pour automatiser les tâches répétitives",
+        "entreprise": "ABC Software",
+        "periode": "2018 - 2021",
+        "details": [
+          "E-mail jean dupont@email.com",
+          "Langues :",
+          "Français Native Anglais \" Niveau C2"
+        ]
+      },
+      {
+        "poste": "Certification Certified Web Developer de 1'Association for Computing Machinery (ACM)",
+        "entreprise": "",
+        "periode": "",
+        "details": []
+      }
+    ],
+    "formations": [
+      {
+        "diplome": "Je suis un ingénieur en informatique avec plus de 5 ans d'expérience dans le développement de logiciels. J'ai une solide expérience en programmation; en gestion de projet et en résolution de problèmes techniques. Je suis également un excellent communicateur; capable de travailler efficacement en équipe et de présenter des idées complexes de manière claire et concise."
+      },
+      {
+        "diplome": "Expérience professionnelle Ingénieur en développement logiciel chez ABC Software (2018-2021) Développement de logiciels de gestion pour des clients internationaux Gestion de projet pour plusieurs projets simultanément Rédaction de documentation technique et formation des utilisateurs Développeur logiciel chez XYZ Company (2016-2018) Développement de logiciels de suivi de projets pour une entreprise de construction Conception et implémentation de bases de données SQL Développement de scripts en Python pour automatiser les tâches répétitives"
+      },
+      {
+        "diplome": "Master en ingénierie informatique, Université de Paris (2014-2016) Licence en informatique, Université de Nice (2011-2014)"
+      },
+      {
+        "diplome": "Certifications"
+      },
+      {
+        "diplome": "Certification Certified Web Developer de 1'Association for Computing Machinery (ACM)"
+      }
+    ],
+    "competences": [
+      "Git",
+      "Java",
+      "Python",
+      "Sql"
+    ],
+    "langues": [
+      {
+        "langue": "Français",
+        "niveau": "Courant"
+      },
+      {
+        "langue": "Anglais",
+        "niveau": "Courant"
+      }
+    ],
+    "centres_interet": [
+      "Langues",
+      "Photographie",
+      "Randonnée"
+    ]
+  }
+}

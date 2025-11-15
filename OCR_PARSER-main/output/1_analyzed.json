@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "export_date": "2025-11-11T22:19:04.119543",
+    "version": "2.0",
+    "source": "Bilingual_CV_Analyzer",
+    "language_support": [
+      "fr",
+      "en"
+    ],
+    "detected_language": "fr"
+  },
+  "cv_data": {
+    "nom_complet": "Youssef Mohammed Saad",
+    "intitule_poste": "Consultant",
+    "contact": {
+      "telephone": "",
+      "email": "Dyoussef.saad2ooo.ym@gmail.com",
+      "adresse": ""
+    },
+    "profil": "",
+    "experiences": [
+      {
+        "poste": "Customer Service Advisor Vodafone UK (Jan 2021 Mar 2021) Resolved customer inquiries efficiently while maintaining satisfaction and loyalty . Presentation Director = Enactus Chinese University (Jul 2022 ~ Jul 2024) Led the presentation team in delivering high-impact pitches for competitions. Enhanced communication strategies through persuasive content and team collaboration. Freelance Marketing Specialist = Al Sumow (Mar 2024 ~ Jul 2024) Developed compelling scripts and marketing content for real estate brands. Collaborated with clients to align campaigns with objectives and boost visibility . Property Consultant The Address Investment (Jul 2024 _ Oct 2024) Guided clients through real estate purchases; providing tailored advice and solutions. Negotiated deals, achieving sales targets and strengthening client relationships. Content Creator ~ Freelance (2023 ~ Present) Produce engaging digital content tailored to target audiences. Support marketing campaigns through social media; copywriting; and visual storytelling. Enhance brand visibility and engagement through creative online strategies:.",
+        "entreprise": "",
+        "periode": "",
+        "details": [
+          "Skills & Languages Skills: Marketing Strategy; Brand Communication; Content Creation; Negotiation; Copywriting; Presentation; Analytical Thinking, Team Collaboration; Video Editing, Leadership Languages: Arabic (Native) , English (Fluent), Chinese (HSK2)"
+        ]
+      }
+    ],
+    "formations": [
+      {
+        "diplome": "Education Faculty of Economics and International Trade ~ Egyptian Chinese University Major: Marketing GPA: 3.74 Graduation Year: 2025 Ranked Ist during the first three years; and 3rd overall in graduating class"
+      },
+      {
+        "diplome": "Experience Customer Service Advisor Vodafone UK (Jan 2021 Mar 2021) Resolved customer inquiries efficiently while maintaining satisfaction and loyalty . Presentation Director = Enactus Chinese University (Jul 2022 ~ Jul 2024) Led the presentation team in delivering high-impact pitches for competitions. Enhanced communication strategies through persuasive content and team collaboration. Freelance Marketing Specialist = Al Sumow (Mar 2024 ~ Jul 2024) Developed compelling scripts and marketing content for real estate brands. Collaborated with clients to align campaigns with objectives and boost visibility . Property Consultant The Address Investment (Jul 2024 _ Oct 2024) Guided clients through real estate purchases; providing tailored advice and solutions. Negotiated deals, achieving sales targets and strengthening client relationships. Content Creator ~ Freelance (2023 ~ Present) Produce engaging digital content tailored to target audiences. Support marketing campaigns through social media; copywriting; and visual storytelling. Enhance brand visibility and engagement through creative online strategies:."
+      },
+      {
+        "diplome": "Certifications & Awards HSK 2 Chinese Certification Confucius Institute; Cairo University 2nd Place Team Award; Graduation Project Egyptian Chinese University (June 2025) 2nd Place, Chinese Bridge Competition Egyptian Chinese University Personal Branding & Marketing Course with Medhat Yassin"
+      }
+    ],
+    "competences": [
+      "Communication"
+    ],
+    "langues": [],
+    "centres_interet": []
+  }
+}

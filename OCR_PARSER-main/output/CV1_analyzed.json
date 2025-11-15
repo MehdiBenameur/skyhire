@@ -1,0 +1,79 @@
+{
+  "metadata": {
+    "export_date": "2025-11-11T22:00:29.909545",
+    "version": "2.0",
+    "source": "Bilingual_CV_Analyzer",
+    "language_support": [
+      "fr",
+      "en"
+    ],
+    "detected_language": "fr"
+  },
+  "cv_data": {
+    "nom_complet": "Rémy Bertrand",
+    "intitule_poste": "Responsable",
+    "contact": {
+      "telephone": "0485435365",
+      "email": "",
+      "adresse": ""
+    },
+    "profil": "",
+    "experiences": [
+      {
+        "poste": "professionnelle Responsable commercial, Société ABC, Ville, Pays janvier 2OXX Présent Diriger une équipe de X représentants des ventes Développer et mettre en œuvre des stratégies de vente pour atteindre et dépasser les objectifs de vente mensuels et annuels. Établir des relations solides avec les clients existants et les principaux comptes Négocier des contrats et des ententes avec les clients Préparer des rapports de vente, des analyses de performances",
+        "entreprise": "",
+        "periode": "",
+        "details": [
+          "Adesse êlectroniqe Josephfavreau@gmaikc",
+          "@@npeteee",
+          "Gesno des %ntes Dêvloppenent @es âffafres Mégodation @@nmesdale Geston de@ptes dês Leadership @îgesâon @êquipe Senviædient Amalysede @aîdhe Prêvisions de vnte"
+        ]
+      },
+      {
+        "poste": "Représentant des ventes, Société XYZ, Ville, Pays janvier 2OXX Décembre 2OXX Gérer un portefeuille de clients et développer de nouvelles relations commerciales. Présenter les produits et les services aux clients potentiels Négocier les conditions de vente et conclure des contrats avec succès. Collaborer avec les équipes internes pour assurer la satisfaction du client et résoudre les problèmes éventuels. Atteindre et dépasser les objectifs de vente assignés.",
+        "entreprise": "",
+        "periode": "",
+        "details": [
+          "Langues",
+          "Représentant des ventes, Société XYZ, Ville, Pays janvier 2OXX Décembre 20XX",
+          "françis Anglais (Miveau B29"
+        ]
+      },
+      {
+        "poste": "Représentant des ventes, Société XYZ, Ville, Pays janvier 2OXX Décembre 20XX",
+        "entreprise": "",
+        "periode": "",
+        "details": [
+          "françis Anglais (Miveau B29",
+          "Gérer un portefeuille de clients et développer de nouvelles relations commerciales. Présenter les produits et les services aux clients potentiels Négocier les conditions de vente et conclure des contrats avec succès Négocier les conditions de vente et conclure des contrats avec succès.",
+          "C@Dû@ qiuûë\"êc"
+        ]
+      },
+      {
+        "poste": "Gérer un portefeuille de clients et développer de nouvelles relations commerciales. Présenter les produits et les services aux clients potentiels Négocier les conditions de vente et conclure des contrats avec succès Négocier les conditions de vente et conclure des contrats avec succès.",
+        "entreprise": "",
+        "periode": "",
+        "details": [
+          "C@Dû@ qiuûë\"êc",
+          "Rootbal C@urse auîomobile @amping",
+          "Formation"
+        ]
+      }
+    ],
+    "formations": [
+      {
+        "diplome": "Licence en administration des affaires, Université XYZ, Ville, Pays Année d'obtention"
+      }
+    ],
+    "competences": [],
+    "langues": [
+      {
+        "langue": "Anglais",
+        "niveau": "Courant"
+      }
+    ],
+    "centres_interet": [
+      "Langues"
+    ]
+  }
+}
