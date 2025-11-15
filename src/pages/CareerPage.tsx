@@ -1,6 +1,7 @@
 // pages/CareerPage.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import Layout from '../components/Layout';
+
 import { 
   FiMessageCircle, 
   FiSend, 
@@ -11,14 +12,17 @@ import {
   FiAward,
   FiPlayCircle
 } from 'react-icons/fi';
-import { getCareerAdvice, getCareerResources, CareerMessage, CareerResource } from '../services/careerService';
+import { getCareerResources, CareerMessage, CareerResource } from '../services/careerService';
+import { aeroService } from '../services/aeroService';
 
 const CareerPage: React.FC = () => {
   const [messages, setMessages] = useState<CareerMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'resources'>('chat');
-  
+  const [includeSources, setIncludeSources] = useState<boolean>(true);
+  const [brief, setBrief] = useState<boolean>(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const resources = getCareerResources();
 
@@ -54,12 +58,15 @@ const CareerPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Obtenir la réponse de l'assistant
-      const response = await getCareerAdvice(inputMessage);
-      
+      // Obtenir la réponse de l'assistant (Aeronautics chatbot API)
+      const { answer, sources } = await aeroService.chat({ question: inputMessage, include_sources: includeSources, brief });
+      const text = includeSources && sources && sources.length > 0
+        ? `${answer}\n\nSources:\n${sources.map((s) => `• ${s}`).join('\n')}`
+        : answer;
+
       const assistantMessage: CareerMessage = {
         id: (Date.now() + 1).toString(),
-        text: response,
+        text,
         sender: 'assistant',
         timestamp: new Date()
       };
@@ -185,7 +192,7 @@ const CareerPage: React.FC = () => {
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* Quick Questions */}
+                {/* Quick Questions + Options */}
                 <div className="border-t border-gray-200 p-4 bg-gray-50">
                   <p className="text-sm text-gray-600 font-montessart mb-3">Quick questions:</p>
                   <div className="flex flex-wrap gap-2">
@@ -198,6 +205,16 @@ const CareerPage: React.FC = () => {
                         {question}
                       </button>
                     ))}
+                  </div>
+                  <div className="flex items-center gap-4 mt-4">
+                    <label className="flex items-center gap-2 text-sm font-montessart text-gray-700">
+                      <input type="checkbox" checked={includeSources} onChange={(e) => setIncludeSources(e.target.checked)} />
+                      Include sources
+                    </label>
+                    <label className="flex items-center gap-2 text-sm font-montessart text-gray-700">
+                      <input type="checkbox" checked={brief} onChange={(e) => setBrief(e.target.checked)} />
+                      Brief answer
+                    </label>
                   </div>
                 </div>
 

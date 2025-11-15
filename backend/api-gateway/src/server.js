@@ -20,7 +20,8 @@ const targets = {
   INTERVIEW: process.env.INTERVIEW_SERVICE_URL || 'http://localhost:5004',
   JOBS: process.env.JOBS_SERVICE_URL || 'http://localhost:5005',
   CHAT: process.env.CHAT_SERVICE_URL || 'http://localhost:5006',
-  NOTIFICATIONS: process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:5007'
+  NOTIFICATIONS: process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:5007',
+  AERONAUTICS: process.env.AERONAUTICS_SERVICE_URL || 'http://localhost:8000'
 };
 
 app.use(helmet());
@@ -42,7 +43,8 @@ app.get('/api/health', async (req, res) => {
     { name: 'interview', url: `${targets.INTERVIEW}/api/health` },
     { name: 'jobs', url: `${targets.JOBS}/api/health` },
     { name: 'chat', url: `${targets.CHAT}/api/health` },
-    { name: 'notifications', url: `${targets.NOTIFICATIONS}/api/health` }
+    { name: 'notifications', url: `${targets.NOTIFICATIONS}/api/health` },
+    { name: 'aero', url: `${targets.AERONAUTICS}/health` }
   ];
   const results = await Promise.allSettled(services.map(s => axios.get(s.url).then(r => ({ name: s.name, ok: true, data: r.data })).catch(e => ({ name: s.name, ok: false, error: e.message }))));
   const payload = results.reduce((acc, r, i) => { const name = services[i].name; acc[name] = r.value || { ok: false }; return acc; }, {});
@@ -56,6 +58,14 @@ app.use('/api/interview', mkProxy(targets.INTERVIEW));
 app.use('/api/jobs', mkProxy(targets.JOBS));
 app.use('/api/chat', mkProxy(targets.CHAT));
 app.use('/api/notifications', mkProxy(targets.NOTIFICATIONS));
+// Aeronautics chatbot expects bare paths like /chat, not /api/aero/chat
+app.use('/api/aero', createProxyMiddleware({
+  target: targets.AERONAUTICS,
+  changeOrigin: true,
+  ws: true,
+  pathRewrite: { '^/api/aero': '' },
+  logLevel: 'warn'
+}));
 
 app.use('/uploads', mkProxy(targets.CV));
 
