@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@google/genai": "^0.14.0",
     "@tailwindcss/forms": "^0.5.10",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -12,6 +13,10 @@
     "@types/node": "^16.18.126",
     "@types/react-dom": "^19.2.2",
     "axios": "^1.13.1",
+    "classnames": "^2.5.1",
+    "dotenv-flow": "^4.1.0",
+    "eventemitter3": "^5.0.1",
+    "lodash": "^4.17.21",
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.552.0",
     "react": "^19.2.0",
@@ -19,20 +24,15 @@
     "react-icons": "^4.12.0",
     "react-router-dom": "^7.9.5",
     "react-scripts": "5.0.1",
+    "react-select": "^5.8.3",
+    "react-syntax-highlighter": "^15.6.1",
     "socket.io-client": "^4.8.1",
     "tailwind": "^4.0.0",
     "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4",
-    "@google/genai": "^0.14.0",
-    "classnames": "^2.5.1",
-    "dotenv-flow": "^4.1.0",
-    "eventemitter3": "^5.0.1",
-    "lodash": "^4.17.21",
-    "react-select": "^5.8.3",
-    "react-syntax-highlighter": "^15.6.1",
     "vega": "^5.30.0",
     "vega-embed": "^6.29.0",
     "vega-lite": "^5.22.0",
+    "web-vitals": "^2.1.4",
     "zustand": "^5.0.1"
   },
   "scripts": {
@@ -60,7 +60,9 @@
     ]
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.20",
     "@types/react": "^19.2.2",
-    "@types/react-router-dom": "^5.3.3"
+    "@types/react-router-dom": "^5.3.3",
+    "@types/react-syntax-highlighter": "^15.5.13"
   }
 }

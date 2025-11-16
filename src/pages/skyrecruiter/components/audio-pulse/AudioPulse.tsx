@@ -47,18 +47,31 @@ export default function AudioPulse({ active, volume, hover }: AudioPulseProps) {
 
     return () => clearTimeout((timeout as number)!);
   }, [volume]);
+/*
+  return (
+      <div className={c("audioPulse", { active, hover })}>
+        {Array(lineCount)
+            .fill(null)
+            .map((_, i) => (
+                <div
+                    key={i}
+                    ref={(el) => (lines.current[i] = el!)}
+                    style={{ animationDelay: `${i * 133}ms` }}
+                />
+            ))}
+      </div>
+  );*/
 
   return (
-    <div className={c("audioPulse", { active, hover })}>
-      {Array(lineCount)
-        .fill(null)
-        .map((_, i) => (
-          <div
-            key={i}
-            ref={(el) => (lines.current[i] = el!)}
-            style={{ animationDelay: `${i * 133}ms` }}
-          />
-        ))}
-    </div>
+      <div className={c("audioPulse", { active, hover })}>
+        {Array(lineCount)
+            .fill(null)
+            .map((_, i) => (
+                <div
+                    key={i}
+                    style={{ animationDelay: `${i * 133}ms` }}
+                />
+            ))}
+      </div>
   );
 }

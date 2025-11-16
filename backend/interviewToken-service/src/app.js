@@ -1,10 +1,12 @@
 const express = require("express")
 const app = express()
 const dotenv = require("dotenv")
+const cors = require("cors")
 dotenv.config()
 
 const generateEphemeralToken = require("./authgen")
 
+app.use(cors())
 app.use(express.json())
 
 // Health check

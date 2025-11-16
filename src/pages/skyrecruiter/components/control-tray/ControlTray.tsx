@@ -24,10 +24,20 @@ import { useWebcam } from "../../hooks/use-webcam";
 import { AudioRecorder } from "../../lib/audio-recorder";
 import AudioPulse from "../audio-pulse/AudioPulse";
 import "./control-tray.css";
+import {
+  MicIcon,
+  MicOffIcon,
+  PauseIcon,
+  PlayIcon,
+  PresentationIcon,
+  SquareStopIcon,
+  VideoIcon,
+  VideoOffIcon
+} from "lucide-react";
 //import SettingsDialog from "../settings-dialog/SettingsDialog";
 
 export type ControlTrayProps = {
-  videoRef: RefObject<HTMLVideoElement>;
+  videoRef: RefObject<HTMLVideoElement | null>;
   children?: ReactNode;
   supportsVideo: boolean;
   onVideoStreamChange?: (stream: MediaStream | null) => void;
@@ -36,8 +46,8 @@ export type ControlTrayProps = {
 
 type MediaStreamButtonProps = {
   isStreaming: boolean;
-  onIcon: string;
-  offIcon: string;
+  onIcon: ReactNode;
+  offIcon: ReactNode;
   start: () => Promise<any>;
   stop: () => any;
 };
@@ -49,11 +59,11 @@ const MediaStreamButton = memo(
   ({ isStreaming, onIcon, offIcon, start, stop }: MediaStreamButtonProps) =>
     isStreaming ? (
       <button className="action-button" onClick={stop}>
-        <span className="material-symbols-outlined">{onIcon}</span>
+        {onIcon}
       </button>
     ) : (
       <button className="action-button" onClick={start}>
-        <span className="material-symbols-outlined">{offIcon}</span>
+        {offIcon}
       </button>
     )
 );
@@ -111,14 +121,14 @@ function ControlTray({
   }, [connected, client, muted, audioRecorder]);
 
   useEffect(() => {
-    if (videoRef.current) {
+    if (videoRef?.current) {
       videoRef.current.srcObject = activeVideoStream;
     }
 
     let timeoutId = -1;
 
     function sendVideoFrame() {
-      const video = videoRef.current;
+      const video = videoRef?.current;
       const canvas = renderCanvasRef.current;
 
       if (!video || !canvas) {
@@ -129,7 +139,7 @@ function ControlTray({
       canvas.width = video.videoWidth * 0.25;
       canvas.height = video.videoHeight * 0.25;
       if (canvas.width + canvas.height > 0) {
-        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        if(videoRef.current) ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
         const base64 = canvas.toDataURL("image/jpeg", 1.0);
         const data = base64.slice(base64.indexOf(",") + 1, Infinity);
         client.sendRealtimeInput([{ mimeType: "image/jpeg", data }]);
@@ -176,9 +186,9 @@ function ControlTray({
               onClick={() => setMuted(!muted)}
           >
             {!muted ? (
-                <span className="material-symbols-outlined filled">mic</span>
+                <MicIcon/>
             ) : (
-                <span className="material-symbols-outlined filled">mic_off</span>
+                <MicOffIcon/>
             )}
           </button>
 
@@ -194,15 +204,15 @@ function ControlTray({
                     isStreaming={screenCapture.isStreaming}
                     start={changeStreams(screenCapture)}
                     stop={changeStreams()}
-                    onIcon="cancel_presentation"
-                    offIcon="present_to_all"
+                    onIcon={<PresentationIcon/>}
+                    offIcon={<SquareStopIcon/>}
                 />
                 <MediaStreamButton
                     isStreaming={webcam.isStreaming}
                     start={changeStreams(webcam)}
                     stop={changeStreams()}
-                    onIcon="videocam_off"
-                    offIcon="videocam"
+                    onIcon={<VideoIcon/>}
+                    offIcon={<VideoOffIcon/>}
                 />
               </>
           )}
@@ -226,9 +236,7 @@ function ControlTray({
                   (connected ? disconnect : connect)()
                 }}
             >
-            <span className="material-symbols-outlined filled">
-              {connected ? "pause" : "play_arrow"}
-            </span>
+              {connected ? <PauseIcon/> : <PlayIcon/>}
             </button>
           </div>
         </div>

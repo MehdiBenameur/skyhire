@@ -1,7 +1,8 @@
 import React, { useRef, useState, useEffect } from "react";
 import { FiPhoneOff, FiVideo, FiMicOff } from "react-icons/fi";
 import Lottie from "lottie-react";
-import recruiterAnim from "../assets/recruiter.json"; // 🔥 ton fichier Lottie ici
+import recruiterAnim from "../assets/recruiter.json";
+import SkyRecruiterContainer from "./skyrecruiter/SkyRecruiterContainer"; // 🔥 ton fichier Lottie ici
 
 interface FeedbackItem {
   label: string;
@@ -23,24 +24,10 @@ const InterviewPage: React.FC = () => {
   ]);
 
   const startInterview = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
-
-      // ✅ assigner le flux uniquement à la preview
-      if (previewRef.current) previewRef.current.srcObject = stream;
-
       setIsInterviewActive(true);
-    } catch (err) {
-      console.error("Camera error:", err);
-    }
   };
 
   const stopInterview = () => {
-    const stream = previewRef.current?.srcObject as MediaStream;
-    if (stream) stream.getTracks().forEach((t) => t.stop());
     setIsInterviewActive(false);
   };
 
@@ -72,38 +59,12 @@ const InterviewPage: React.FC = () => {
           {/* Left panel (Recruiter + preview + control bar) */}
           <div className="relative bg-white border border-gray-200 rounded-2xl shadow-lg flex-1 h-[460px] flex items-center justify-center overflow-hidden">
             {/* --- Lottie Animation stays always --- */}
-            <div className="w-full h-full flex items-center justify-center">
+            {!isInterviewActive && (<div className="w-full h-full flex items-center justify-center">
               <Lottie animationData={recruiterAnim} loop={true} />
-            </div>
+            </div>)}
 
-            {/* --- Self preview (bottom-right) --- */}
             {isInterviewActive && (
-              <video
-                ref={previewRef}
-                autoPlay
-                muted
-                playsInline
-                className="absolute bottom-4 right-4 w-44 h-32 border-2 border-white rounded-lg shadow-lg object-cover"
-              />
-            )}
-
-            {/* --- Control bar --- */}
-            {isInterviewActive && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm shadow-md rounded-xl flex items-center gap-6 px-6 py-2">
-                <button
-                  onClick={stopInterview}
-                  className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-full"
-                >
-                  <FiPhoneOff className="text-lg" />
-                </button>
-                <span className="text-sm font-semibold text-gray-700">{time}</span>
-                <button className="text-gray-700 hover:text-black p-2 rounded-full">
-                  <FiMicOff className="text-lg" />
-                </button>
-                <button className="text-gray-700 hover:text-black p-2 rounded-full">
-                  <FiVideo className="text-lg" />
-                </button>
-              </div>
+                <SkyRecruiterContainer/>
             )}
 
             {/* --- Start button (only when inactive) --- */}

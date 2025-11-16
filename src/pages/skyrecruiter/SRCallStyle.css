@@ -4,12 +4,15 @@ body {
 
 #call-container {
     display: block;
-    width: 700px;
-    height: 450px;
-    border-radius: 40px;
+    min-width: 600px;
+    min-height: 400px;
+    width: 100%;
+    height: 400px;
+    aspect-ratio: 16/9;
     overflow: hidden;
     font-family: "Emirates", "Emirates Medium", "Montserrat", "Arial", sans-serif;
     z-index: 0;
+    position: relative;
 }
 
 span.waiting-to-join {

@@ -35,11 +35,11 @@ export const LiveAPIProvider: FC<LiveAPIProviderProps> = ({
     liveAPI.setModel("gemini-2.5-flash-native-audio-preview-09-2025")
   }, []);
 
-  return (
+  return ((options.apiKey && options.apiKey.length > 0) ?
     <LiveAPIContext.Provider value={liveAPI}>
       {children}
     </LiveAPIContext.Provider>
-  );
+  : null);
 };
 
 export const useLiveAPIContext = () => {

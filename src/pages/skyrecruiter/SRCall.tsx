@@ -18,11 +18,11 @@
 import {useEffect, useRef, useState} from "react";
 import "./SRCall.css";
 import { LiveAPIProvider } from "./contexts/LiveAPIContext";
-import SidePanel from "./components/side-panel/SidePanel";
 import { Altair } from "./components/altair/Altair";
 import ControlTray from "./components/control-tray/ControlTray";
 import cn from "classnames";
 import { LiveClientOptions } from "./types";
+import {set} from "vega-lite/build/src/log";
 
 function SRCall() {
   // this video reference is used for displaying the active stream, whether that is the webcam or screen capture
@@ -33,7 +33,9 @@ function SRCall() {
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
 
   useEffect(() => {
-    fetch("")
+    fetch("http://localhost:5008/token").then(async res => {
+      setApiKey((await res.json()).token.value)
+    })
   }, []);
 
   return (
@@ -43,9 +45,6 @@ function SRCall() {
           {/*<SidePanel />*/}
           <main>
             <div className="main-app-area">
-              <span className="waiting-to-join">
-                Waiting for you to join the call ...
-              </span>
               {/* APP goes here */}
               <Altair />
               <video
